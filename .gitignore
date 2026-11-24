@@ -1,0 +1,19 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+.idea/
+*.db
+*.db-shm
+*.db-wal
+TestResults/
+
+# Cloudflare / Node
+node_modules/
+.wrangler/
+.dev.vars
+
+# OS
+.DS_Store
+Thumbs.db

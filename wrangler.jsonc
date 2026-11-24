@@ -1,0 +1,9 @@
+{
+  // Cloudflare Workers: sadece public/ klasörünü statik site olarak yayınlar.
+  // solutions/ ve labs/ hiçbir zaman yayınlanmaz.
+  "name": "csharp-pratik",
+  "compatibility_date": "2025-11-01",
+  "assets": {
+    "directory": "./public"
+  }
+}

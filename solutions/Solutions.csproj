@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- dotnet --version ile SDK'nı kontrol et; 8 ise net8.0 yaz ve paket sürümlerini 8.0.* yap -->
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Pratik</RootNamespace>
+    <AssemblyName>Pratik</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Web ve test görevleri farklı proje tipi ister: burada sadece arşiv olarak durur, derlenmez -->
+  <ItemGroup>
+    <Compile Remove="13-ASPNETCore/**" />
+    <Compile Remove="15-Test/**" />
+    <None Include="13-ASPNETCore/**;15-Test/**" />
+  </ItemGroup>
+
+  <!-- DI, Mediator ve EF Core görevleri için -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.*" />
+  </ItemGroup>
+
+</Project>

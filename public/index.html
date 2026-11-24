@@ -1,0 +1,2769 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C# Kodlama Pratiği</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: çalışma defteri; sakin, odaklı, ezber değil eylem
+   IDEA: bir atölye görev kartı destesi — her kart "şunu kodla" der
+   PICTURE: görev listesinin kendisi, üstte ilerleme ve bugünün görevleri
+   COLOUR and TYPE: gece mavisi + antrasit zemin, bej kağıt kartlar, açık kahve vurgu; IBM Plex Sans + JetBrains Mono
+   LAYOUT: koyu başlık bandı, altında filtreler ve tek sütun kart akışı */
+:root{color-scheme:light dark;
+--bg:light-dark(#efe7d8,#14171c);--paper:light-dark(#fbf7ef,#1d2129);--ink:light-dark(#151a24,#ece4d4);
+--muted:light-dark(#5d5a52,#a49c8c);--line:light-dark(#d9cdb6,#2e3440);--navy:#121c30;--navy2:#1b2843;
+--accent:light-dark(#8a5f32,#c99b66);--code:#0f141d;--codeInk:#e6dcc8;--ok:light-dark(#3e6b47,#7fb38a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "IBM Plex Sans",system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(24px,4vw,56px) max(5vw,16px)}
+.wrap{max-width:980px;margin:0 auto}
+pre,.scroll{overflow-x:auto}code{overflow-wrap:anywhere}
+.hero{background:linear-gradient(160deg,var(--navy),var(--navy2));color:#efe6d4}
+.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.05;margin:0 0 10px;text-wrap:balance;font-weight:700}
+.hero p{margin:0 0 22px;color:#c9bfae;max-width:62ch}
+.meter{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar{flex:1 1 220px;height:12px;border-radius:99px;background:#2a3858;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#c99b66;transition:width .4s}
+.count{font-weight:600;white-space:nowrap}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button,.chip{font:inherit;cursor:pointer;min-height:44px;border-radius:10px;padding:0 16px;border:1px solid transparent}
+button:focus-visible,.chip:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #c99b66;outline-offset:2px}
+.primary{background:#c99b66;color:#141821;font-weight:600}
+.ghost{background:transparent;color:#efe6d4;border-color:#4a5a7c}
+.tools{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:12px max(5vw,16px)}
+.tools .wrap{display:flex;flex-direction:column;gap:10px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.chip{flex:none;background:var(--paper);color:var(--ink);border-color:var(--line);font-size:14px;min-height:38px}
+.chip[aria-pressed=true]{background:var(--navy);color:#efe6d4;border-color:var(--navy)}
+input[type=search]{font:inherit;font-size:16px;width:100%;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}
+#today{display:none}#today.on{display:block}
+.today-box{border:2px solid var(--accent);border-radius:14px;padding:16px 18px;margin-bottom:22px;background:var(--paper)}
+.today-box h2{margin:0 0 6px;font-size:20px}
+.today-box p{margin:0;color:var(--muted);font-size:15px}
+h2.cat{font-size:22px;margin:30px 0 12px;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+h2.cat small{font-size:14px;color:var(--muted);font-weight:500;white-space:nowrap}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px}
+.card.done{opacity:.62}
+.head{display:flex;gap:12px;align-items:flex-start}
+.num{flex:none;font:600 14px "JetBrains Mono",monospace;color:var(--accent);padding-top:3px}
+.head h3{margin:0;font-size:18px;line-height:1.3;flex:1}
+.check{flex:none;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;min-height:32px}
+.check input{width:22px;height:22px;accent-color:var(--ok)}
+.task{margin:10px 0 8px}
+.lbl{font-size:13px;font-weight:600;color:var(--accent);margin:10px 0 2px}
+.card ul{margin:2px 0 0;padding-left:20px}
+.card li{margin:2px 0}
+.iv{margin-top:10px;padding:10px 12px;border-radius:10px;background:light-dark(#efe5d3,#252a33);font-size:15px}
+details{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+summary{cursor:pointer;font-weight:600;font-size:15px;min-height:36px;display:flex;align-items:center}
+.codebox{position:relative;margin-top:8px}
+pre{margin:0;background:var(--code);color:var(--codeInk);border-radius:10px;padding:14px;font:13.5px/1.55 "JetBrains Mono",monospace;tab-size:4}
+.copy{position:absolute;top:8px;right:8px;min-height:32px;padding:0 10px;font-size:13px;background:#2a3858;color:#efe6d4;border-radius:8px}
+.empty{color:var(--muted);padding:30px 0;text-align:center}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:15px}
+footer h2{color:var(--ink);font-size:20px;margin:0 0 8px}
+footer ol{padding-left:20px;margin:0}
+footer code{font-family:"JetBrains Mono",monospace;font-size:14px;background:var(--paper);padding:1px 6px;border-radius:6px}
+@media(max-width:600px){.head{flex-wrap:wrap}.check{width:100%;justify-content:flex-end}.hero h1{font-size:30px}}
+.gh-panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:22px}
+.gh-panel h2{margin:0 0 4px;font-size:20px}
+.gh-panel p{margin:0;color:var(--muted);font-size:15px}
+.gh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:14px 0}
+.gh-grid label{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:600}
+.gh-grid input{font:inherit;font-size:16px;font-weight:400;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.gh-status{font-size:14px;margin-top:10px!important;color:var(--ink)!important}
+.btn2{background:var(--paper);color:var(--ink);border:1px solid var(--line);font-weight:600}
+.btn2:hover{border-color:var(--accent)}
+.mine{margin-top:12px}
+textarea.ed{display:block;width:100%;min-height:200px;resize:vertical;font:13.5px/1.55 "JetBrains Mono",monospace;background:var(--code);color:var(--codeInk);border:1px solid var(--line);border-radius:10px;padding:12px;tab-size:4}
+textarea.ed:focus-visible{outline:3px solid #c99b66;outline-offset:2px}
+.mine-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.st{font-size:14px;color:var(--muted)}.st a{color:var(--accent);font-weight:600}
+.path{font:12px "JetBrains Mono",monospace;color:var(--muted);margin-top:6px;overflow-wrap:anywhere}
+@media(max-width:600px){textarea.ed{font-size:16px}}
+.repo{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--code);overflow-x:auto}
+.repo code{flex:1;color:var(--codeInk);font:12.5px "JetBrains Mono",monospace;white-space:nowrap;overflow-wrap:normal}
+.repo .copy{position:static;flex:none}
+footer pre{margin:8px 0 16px}
+.konu{border-top:0;margin-top:12px;padding:12px 14px;border-radius:10px;background:light-dark(#f3ecdf,#20252e);border-left:3px solid var(--accent)}
+.konu summary{color:var(--accent)}
+.konu p{margin:8px 0 0;font-size:15.5px}
+.ic{font-family:"JetBrains Mono",monospace;font-size:.9em;background:light-dark(#e6dac4,#2c3340);padding:1px 5px;border-radius:5px}
+@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<header class="band hero"><div class="wrap">
+<h1>C# temelleri: oku değil, kodla</h1>
+<p>Mülakatta sorulan her temel konu için önce kısa bir konu anlatımı, ardından küçük bir "şunu kodla" görevi var. Konuyu oku, kendin yaz, çıktıyı gözle, sonra çözüme bak. Ertesi gün çözüme bakmadan tekrar yaz.</p>
+<div class="meter"><div class="bar"><i id="barFill"></i></div><span class="count" id="countTxt">0 / 0</span></div>
+<div class="actions">
+<button class="primary" id="pickBtn">Bugünün 3 görevini seç</button>
+<button class="ghost" id="ghBtn">GitHub ayarları</button>
+<button class="ghost" id="resetBtn">İlerlemeyi sıfırla</button>
+</div>
+<div id="confirm" style="display:none;margin-top:12px;font-size:15px">Tüm işaretler silinsin mi?
+<button class="ghost" id="yesReset" style="margin-left:6px">Evet, sil</button> <button class="ghost" id="noReset">Vazgeç</button></div>
+</div></header>
+
+<div class="tools"><div class="wrap">
+<div class="chips" id="chips" role="toolbar" aria-label="Kategori filtresi"></div>
+<input type="search" id="q" placeholder="Ara: async, struct, LINQ, lock…" aria-label="Görevlerde ara">
+<label class="toggle"><input type="checkbox" id="hideDone"> Tamamlananları gizle</label>
+</div></div>
+
+<main class="band" style="padding-top:20px"><div class="wrap">
+<section class="gh-panel" id="ghPanel" hidden>
+<h2>GitHub bağlantısı</h2>
+<p>Çözümlerin bu repoya commit edilir. Token sadece bu tarayıcıda saklanır, başka hiçbir yere gönderilmez (yalnızca api.github.com'a).</p>
+<div class="gh-grid">
+<label>Kullanıcı adı<input id="ghOwner" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github-kullanici-adin"></label>
+<label>Repo<input id="ghRepo" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="csharp-pratik"></label>
+<label>Branch<input id="ghBranch" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="main"></label>
+<label>Dosya yolu şablonu<input id="ghPath" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="solutions/{cat}/{cls}.cs"></label>
+<label>Fine-grained token<input id="ghToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_..."></label>
+</div>
+<div class="mine-actions"><button class="primary" id="ghSave">Kaydet ve bağlantıyı test et</button><button class="btn2" id="ghForget">Token'ı bu tarayıcıdan sil</button></div>
+<p class="gh-status" id="ghStatus" aria-live="polite"></p>
+<details><summary>Token nasıl alınır?</summary><ol style="margin:6px 0 0;padding-left:20px;font-size:15px">
+<li>GitHub'da boş bir repo oluştur (ör. <code class="ic">csharp-pratik</code>). İçinde en az bir commit olsun; README ile oluşturman yeterli.</li>
+<li>Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token.</li>
+<li>Repository access: <b>Only select repositories</b> ve sadece bu repoyu seç.</li>
+<li>Permissions → Repository permissions → <b>Contents: Read and write</b>. Başka izin verme.</li>
+<li>Süre olarak 90 gün seç, token'ı kopyalayıp buraya yapıştır.</li>
+</ol>
+<p style="margin-top:8px">Varsayılan yol <code class="ic">solutions/{cat}/{cls}.cs</code>. Örnek: <code class="ic">solutions/10-IleriCSharpDili/G41_NullableReferenceTypesVe.cs</code>. Kullanılabilen alanlar: <code class="ic">{cat}</code> kategori klasörü, <code class="ic">{cls}</code> class adı, <code class="ic">{slug}</code> görev adı, <code class="ic">{n}</code> görev numarası.</p>
+</details>
+</section>
+<section id="today"></section>
+<div id="list"></div>
+</div></main>
+
+<footer class="band"><div class="wrap">
+<h2>Nasıl çalışılır</h2>
+<ol>
+<li>Bir kez kur: <code>dotnet new console -n Pratik</code>, sonra her görevi <code>Program.cs</code> içine yazıp <code>dotnet run</code> ile çalıştır.</li>
+<li>Önce konu anlatımını oku, sonra görevi çözüme bakmadan yaz. Takılırsan önce ipucunu aç.</li>
+<li>"Çıktıda görmen gereken" maddeleri kendi ekranında doğrula. Tutmuyorsa nedenini bul.</li>
+<li>"Mülakatta" kutusundaki cümleyi kendi kelimelerinle sesli söyle.</li>
+<li>Ertesi gün aynı görevi sıfırdan yaz. İkinci seferde takılmazsan işaretle.</li>
+</ol>
+<h2 style="margin-top:28px">Repo yapısı</h2>
+<p>Tek repo: Cloudflare sadece <code>public/</code> klasörünü yayınlar, çözümlerin <code>solutions/</code> altında tek bir konsol projesi olarak derlenir.</p>
+<pre><code>csharp-pratik/
+├─ public/
+│  └─ index.html            ← bu sayfa (Cloudflare yayınlar)
+├─ solutions/
+│  ├─ Solutions.csproj      ← tek konsol projesi
+│  ├─ Program.cs            ← runner: dotnet run --project solutions -- 41
+│  ├─ 01-DegerVeReferans/
+│  │  └─ G01_StructIleClassKopyalama.cs
+│  ├─ 10-IleriCSharpDili/
+│  │  └─ G41_NullableReferenceTypesVe.cs
+│  ├─ 13-ASPNETCore/        ← arşiv, derlenmez
+│  └─ 15-Test/              ← arşiv, derlenmez
+├─ labs/                    ← web ve test görevleri için ayrı projeler
+├─ wrangler.jsonc
+├─ .gitignore
+└─ README.md</code></pre>
+<ol>
+<li>Sayfadaki editör her görevi kendi kategori klasörüne <code>G41_...</code> adlı static bir class olarak commit eder. Kodunu <code>Run()</code> metodunun içine, yardımcı tipleri sınıfın altına yazarsın.</li>
+<li>Bilgisayarda <code>git pull</code> yapıp <code>dotnet run --project solutions -- 41</code> ile istediğin görevi çalıştırırsın. Numara vermezsen commit ettiğin görevler listelenir.</li>
+<li>Her görev kendi namespace'inde (<code>Pratik.Gorev41</code>) durduğu için farklı görevlerdeki aynı isimli sınıflar (ör. iki ayrı <code>Station</code>) çakışmaz.</li>
+<li>Çözümü kopyalama, elle yaz. Repo senin yazdığın kodu göstermeli.</li>
+</ol>
+</div></footer>
+
+<script>
+{
+const CATS=["Değer ve referans","OOP","Async ve thread","Koleksiyonlar","LINQ","Delegate ve generic","Bellek ve kaynak","DI ve SOLID","Exception","İleri C# dili","İleri async","Tasarım kalıpları","ASP.NET Core","EF Core","Test"];
+const X=[
+{c:0,t:"struct ile class kopyalama farkı",g:"Bir struct ve bir class tanımla (ikisinde de int X olsun). Her birini başka bir değişkene ata, kopyanın X'ini 99 yap ve iki orijinali yazdır.",k:["struct orijinali 1 kalır","class orijinali 99 olur"],m:"struct değer tipidir, atamada kopyalanır; class referans tipidir, atamada aynı nesneyi gösteren ikinci bir referans oluşur.",h:"var s2 = s1; sonra s2.X = 99;",s:`var s1 = new PointS { X = 1 };
+var s2 = s1; s2.X = 99;
+var c1 = new PointC { X = 1 };
+var c2 = c1; c2.X = 99;
+Console.WriteLine($"struct: {s1.X}, class: {c1.X}"); // struct: 1, class: 99
+
+struct PointS { public int X; }
+class PointC { public int X; }`},
+{c:0,t:"ref ve out parametreleri",g:"İki int'in yerini değiştiren Swap(ref int, ref int) yaz. Sonra sıfıra bölmeyi güvenle deneyen bool TryDivide(int, int, out int) yaz.",k:["Swap sonrası değerler yer değiştirir","Sıfıra bölmede false döner, exception fırlamaz"],m:"ref, değişkenin kendisini gönderir ve önceden atanmış olmalıdır. out ise metodun değer atamasını zorunlu kılar; TryParse kalıbı budur.",h:"Tuple swap: (x, y) = (y, x);",s:`int a = 1, b = 2;
+Swap(ref a, ref b);
+Console.WriteLine($"{a} {b}"); // 2 1
+
+if (TryDivide(10, 0, out var r)) Console.WriteLine(r);
+else Console.WriteLine("Bölünemez");
+
+static void Swap(ref int x, ref int y) => (x, y) = (y, x);
+
+static bool TryDivide(int x, int y, out int result)
+{
+    if (y == 0) { result = 0; return false; }
+    result = x / y;
+    return true;
+}`},
+{c:0,t:"string değişmezliği ve StringBuilder",g:"Bir string'e döngüde 20.000 kez += ile karakter ekle, Stopwatch ile süreyi ölç. Aynısını StringBuilder ile yap ve karşılaştır.",k:["StringBuilder kat kat hızlıdır","Döngü sayısını ikiye katlayınca += süresi yaklaşık dört katına çıkar"],m:"string immutable'dır; her += yeni bir string üretip eskisini kopyalar, bu da O(n²) eder. StringBuilder büyüyen bir tampon kullanır.",h:"using System.Diagnostics; using System.Text;",s:`using System.Diagnostics;
+using System.Text;
+
+var sw = Stopwatch.StartNew();
+string s = "";
+for (int i = 0; i < 20_000; i++) s += "a";
+Console.WriteLine($"string +=: {sw.ElapsedMilliseconds} ms");
+
+sw.Restart();
+var sb = new StringBuilder();
+for (int i = 0; i < 20_000; i++) sb.Append('a');
+string t = sb.ToString();
+Console.WriteLine($"StringBuilder: {sw.ElapsedMilliseconds} ms");`},
+{c:0,t:"Boxing ve unboxing",g:"Bir int'i object'e ata, sonra int'i değiştir ve object'i yazdır. Ardından object içindeki int'i long'a cast etmeyi dene.",k:["object eski değeri (5) gösterir","(long)o satırı InvalidCastException fırlatır"],m:"Boxing, değer tipini heap'te bir nesneye kopyalar. Unboxing yalnızca birebir aynı tipe yapılabilir; maliyetli olduğu için generic koleksiyonlar tercih edilir.",h:"object o = x; x = 10; Console.WriteLine(o);",s:`int x = 5;
+object o = x;      // boxing: heap'e kopya
+x = 10;
+Console.WriteLine(o); // 5
+int y = (int)o;    // unboxing: tip birebir aynı olmalı
+
+try { long l = (long)o; }
+catch (InvalidCastException) { Console.WriteLine("int kutusu long'a açılamaz"); }
+long ok = (long)(int)o; // önce int'e aç, sonra dönüştür`},
+{c:0,t:"record, == ve Equals",g:"Aynı değerlere sahip iki record ve iki class nesnesi oluştur. == ile karşılaştır. Record'dan with ifadesiyle yaşı değişmiş bir kopya üret.",k:["record'lar == ile True","class'lar == ile False","with orijinali değiştirmez"],m:"class varsayılan olarak referans eşitliği, record ise değer eşitliği kullanır. record ayrıca immutable kullanım ve with kopyası için tasarlanmıştır.",h:"record PersonR(string Name, int Age);",s:`var r1 = new PersonR("Ali", 30);
+var r2 = new PersonR("Ali", 30);
+var c1 = new PersonC("Ali", 30);
+var c2 = new PersonC("Ali", 30);
+
+Console.WriteLine(r1 == r2);                // True
+Console.WriteLine(c1 == c2);                // False
+Console.WriteLine(ReferenceEquals(r1, r2)); // False
+var r3 = r1 with { Age = 31 };
+Console.WriteLine($"{r1} | {r3}");
+
+record PersonR(string Name, int Age);
+class PersonC(string name, int age)
+{
+    public string Name { get; } = name;
+    public int Age { get; } = age;
+}`},
+{c:0,t:"Equals ve GetHashCode override",g:"Amount ve Currency içeren bir Money class'ı yaz. Aynı değerli iki Money'yi HashSet'e ekle ve Count'u yazdır. Sonra Equals ve GetHashCode'u override edip tekrar dene.",k:["Override yokken Count 2","Override sonrası Count 1"],m:"Dictionary ve HashSet önce GetHashCode ile kovayı bulur, sonra Equals ile karşılaştırır. Biri override edilirse diğeri de edilmelidir.",h:"HashCode.Combine(Amount, Currency)",s:`var set = new HashSet<Money> { new(10, "TRY"), new(10, "TRY") };
+Console.WriteLine(set.Count); // 1
+
+class Money(decimal amount, string currency)
+{
+    public decimal Amount { get; } = amount;
+    public string Currency { get; } = currency;
+
+    public override bool Equals(object? o) =>
+        o is Money m && m.Amount == Amount && m.Currency == Currency;
+
+    public override int GetHashCode() => HashCode.Combine(Amount, Currency);
+}`},
+{c:1,t:"Abstract class ve interface",g:"Abstract Shape (abstract double Area()) yaz; Circle ve Rect türet. Sadece Circle bir IDrawable interface'i uygulasın. List<Shape> içinde dolaşıp alanları yazdır, IDrawable olanları çiz.",k:["Her şekil kendi alanını hesaplar","Draw sadece Circle için çalışır"],m:"Abstract class ortak durum ve davranış taşır, tek kalıtım yapılır. Interface bir sözleşmedir, bir sınıf birden fazlasını uygulayabilir.",h:"if (s is IDrawable d) d.Draw();",s:`List<Shape> shapes = [new Circle(2), new Rect(3, 4)];
+foreach (var s in shapes)
+{
+    Console.WriteLine($"{s.GetType().Name}: {s.Area():F2}");
+    if (s is IDrawable d) d.Draw();
+}
+
+abstract class Shape { public abstract double Area(); }
+interface IDrawable { void Draw(); }
+
+class Circle(double r) : Shape, IDrawable
+{
+    public override double Area() => Math.PI * r * r;
+    public void Draw() => Console.WriteLine("Daire çizildi");
+}
+class Rect(double w, double h) : Shape
+{
+    public override double Area() => w * h;
+}`},
+{c:1,t:"virtual/override ve new (gizleme)",g:"Base'te virtual Virt() ve normal Hidden() yaz. Derived'da Virt'i override et, Hidden'ı new ile gizle. Base b = new Derived(); ile ikisini de çağır.",k:["b.Virt() Derived sürümünü çalıştırır","b.Hidden() Base sürümünü çalıştırır"],m:"override çalışma zamanındaki gerçek tipe bakar (polimorfizm). new ise derleme zamanındaki değişken tipine bakar; polimorfizm sağlamaz.",h:"((Derived)b).Hidden() ile de dene.",s:`Base b = new Derived();
+b.Virt();              // Derived.Virt
+b.Hidden();            // Base.Hidden
+((Derived)b).Hidden(); // Derived.Hidden
+
+class Base
+{
+    public virtual void Virt() => Console.WriteLine("Base.Virt");
+    public void Hidden() => Console.WriteLine("Base.Hidden");
+}
+class Derived : Base
+{
+    public override void Virt() => Console.WriteLine("Derived.Virt");
+    public new void Hidden() => Console.WriteLine("Derived.Hidden");
+}`},
+{c:1,t:"Encapsulation: BankAccount",g:"Balance'ı dışarıdan değiştirilemeyen (private set) bir BankAccount yaz. Deposit negatif tutarı, Withdraw yetersiz bakiyeyi exception ile reddetsin.",k:["acc.Balance = 1000 derlenmez","Yetersiz bakiyede mesaj yakalanır, bakiye değişmez"],m:"Encapsulation, nesnenin iç durumunu yalnızca kurallarını uygulayan metotlar üzerinden değiştirmektir. Böylece geçersiz durum oluşamaz.",h:"public decimal Balance { get; private set; }",s:`var acc = new BankAccount("TR01");
+acc.Deposit(500);
+try { acc.Withdraw(800); }
+catch (InvalidOperationException e) { Console.WriteLine(e.Message); }
+Console.WriteLine(acc.Balance); // 500
+
+class BankAccount(string iban)
+{
+    public string Iban { get; } = iban;
+    public decimal Balance { get; private set; }
+
+    public void Deposit(decimal amount)
+    {
+        if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
+        Balance += amount;
+    }
+    public void Withdraw(decimal amount)
+    {
+        if (amount > Balance) throw new InvalidOperationException("Yetersiz bakiye");
+        Balance -= amount;
+    }
+}`},
+{c:1,t:"Static üye ve constructor zinciri",g:"Kaç User oluşturulduğunu sayan static bir Count tut. Tek parametreli constructor, this(...) ile iki parametreliye varsayılan rol göndersin.",k:["3 nesneden sonra User.Count 3","Rol verilmeyenler 'user' olur"],m:"static üye tipe aittir, tüm örnekler paylaşır. this(...) tekrar eden kurulum kodunu tek constructor'da toplar.",h:"public User(string name) : this(name, \"user\") { }",s:`new User("ali");
+new User("ayşe", "admin");
+new User("can");
+Console.WriteLine(User.Count); // 3
+
+class User
+{
+    public static int Count { get; private set; }
+    public string Name { get; }
+    public string Role { get; }
+
+    public User(string name) : this(name, "user") { }
+    public User(string name, string role)
+    {
+        Name = name; Role = role; Count++;
+        Console.WriteLine($"{name} ({role})");
+    }
+}`},
+{c:1,t:"Composition ve inheritance",g:"IEngine interface'i, GasEngine ve ElectricEngine yaz. Car motoru constructor'dan alsın. Motoru değiştirmek için Car'a dokunman gerekmesin.",k:["Aynı Car sınıfı iki motorla da çalışır"],m:"'Has-a' ilişkisinde composition tercih edilir: daha gevşek bağlılık sağlar, davranış çalışma zamanında değişebilir. Kalıtım ise 'is-a' içindir.",h:"class Car(IEngine engine)",s:`new Car(new GasEngine()).Start();
+new Car(new ElectricEngine()).Start();
+
+interface IEngine { void Start(); }
+class GasEngine : IEngine { public void Start() => Console.WriteLine("Vrooom"); }
+class ElectricEngine : IEngine { public void Start() => Console.WriteLine("Vızz"); }
+
+class Car(IEngine engine)
+{
+    public void Start()
+    {
+        engine.Start();
+        Console.WriteLine("Araba hazır");
+    }
+}`},
+{c:2,t:"Task.Delay ve Thread.Sleep",g:"100 adet Task.Delay(1000)'i Task.WhenAll ile bekle ve süreyi ölç. Sonra 100 adet Task.Run(() => Thread.Sleep(1000)) ile aynısını yap.",k:["Delay versiyonu yaklaşık 1 saniye","Sleep versiyonu belirgin şekilde daha uzun"],m:"Thread.Sleep thread'i bloklar; ThreadPool'daki thread'ler boşa tutulur. Task.Delay bir timer kurar, beklerken hiçbir thread tutmaz. Async kodda her zaman Task.Delay kullanılır.",h:"Enumerable.Range(0, 100).Select(_ => Task.Delay(1000))",s:`using System.Diagnostics;
+
+var sw = Stopwatch.StartNew();
+await Task.WhenAll(Enumerable.Range(0, 100).Select(_ => Task.Delay(1000)));
+Console.WriteLine($"100 x Task.Delay: {sw.ElapsedMilliseconds} ms");
+
+sw.Restart();
+await Task.WhenAll(Enumerable.Range(0, 100)
+    .Select(_ => Task.Run(() => Thread.Sleep(1000))));
+Console.WriteLine($"100 x Thread.Sleep: {sw.ElapsedMilliseconds} ms");
+// ThreadPool yeni thread'leri yavaş ekler, işler kuyrukta bekler`},
+{c:2,t:"Sıralı await ve Task.WhenAll",g:"1 saniye bekleyip isim döndüren Fetch(string) yaz. Önce üç çağrıyı arka arkaya await et, sonra Task.WhenAll ile paralel bekle. Süreleri karşılaştır.",k:["Sıralı yaklaşık 3 sn","WhenAll yaklaşık 1 sn ve sonuçlar sırayla gelir"],m:"Birbirinden bağımsız I/O işleri önce başlatılıp sonra birlikte beklenmelidir. WhenAll sonuçları çağrı sırasıyla bir dizi olarak döndürür.",h:"var results = await Task.WhenAll(Fetch(\"A\"), Fetch(\"B\"), Fetch(\"C\"));",s:`using System.Diagnostics;
+
+var sw = Stopwatch.StartNew();
+await Fetch("A"); await Fetch("B"); await Fetch("C");
+Console.WriteLine($"Sıralı: {sw.ElapsedMilliseconds} ms");
+
+sw.Restart();
+var results = await Task.WhenAll(Fetch("A"), Fetch("B"), Fetch("C"));
+Console.WriteLine($"WhenAll: {sw.ElapsedMilliseconds} ms -> {string.Join(",", results)}");
+
+static async Task<string> Fetch(string name)
+{
+    await Task.Delay(1000);
+    return name;
+}`},
+{c:2,t:"Race condition: lock ve Interlocked",g:"1000 Task'ın her biri ortak bir sayacı 1000 kez artırsın. Sonucu yazdır. Sonra Interlocked.Increment ve lock ile düzelt.",k:["Korumasız sayaç 1.000.000'dan küçük çıkar","Interlocked ve lock tam 1.000.000 verir"],m:"counter++ atomik değildir: oku, artır, yaz adımları araya girebilir. Basit sayaçlar için Interlocked, birden fazla satırı korumak için lock kullanılır.",h:"Interlocked.Increment(ref safe);",s:`int counter = 0, safe = 0, locked = 0;
+var gate = new object();
+
+await Run(() => counter++);
+await Run(() => Interlocked.Increment(ref safe));
+await Run(() => { lock (gate) { locked++; } });
+Console.WriteLine($"Korumasız: {counter}, Interlocked: {safe}, lock: {locked}");
+
+static Task Run(Action work) =>
+    Task.WhenAll(Enumerable.Range(0, 1000).Select(_ => Task.Run(() =>
+    {
+        for (int i = 0; i < 1000; i++) work();
+    })));`},
+{c:2,t:"CancellationToken ile iptal",g:"Sonsuz döngüde her 500 ms'de adım yazan async bir LongWork yaz. 2 saniye sonra kendiliğinden iptal edilsin, iptal düzgünce yakalansın.",k:["Yaklaşık 4 adım yazılır","'İptal edildi' mesajı görünür, program çökmez"],m:"İptal işbirlikçidir: token metoda geçirilir, metot ThrowIfCancellationRequested ile veya token'ı Task.Delay gibi çağrılara vererek iptale uyar.",h:"new CancellationTokenSource(TimeSpan.FromSeconds(2))",s:`using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+try { await LongWork(cts.Token); }
+catch (OperationCanceledException) { Console.WriteLine("İptal edildi"); }
+
+static async Task LongWork(CancellationToken ct)
+{
+    for (int i = 1; ; i++)
+    {
+        ct.ThrowIfCancellationRequested();
+        Console.WriteLine($"Adım {i}");
+        await Task.Delay(500, ct);
+    }
+}`},
+{c:2,t:"WhenAll içinde birden fazla exception",g:"İkisi de exception fırlatan iki Task'ı WhenAll ile bekle. await'in yakaladığı hatayı ve Task'ın içindeki toplam hata sayısını yazdır.",k:["await sadece ilk hatayı fırlatır","task.Exception.InnerExceptions.Count 2"],m:"await, AggregateException'ı açar ve ilk iç hatayı fırlatır. Tüm hataları görmek için Task'ın Exception.InnerExceptions özelliğine bakılır.",h:"WhenAll'un döndürdüğü Task'ı bir değişkende tut.",s:`var all = Task.WhenAll(Fail("A"), Fail("B"));
+try { await all; }
+catch (Exception e)
+{
+    Console.WriteLine($"await yakaladı: {e.Message}");
+    Console.WriteLine($"Toplam hata: {all.Exception!.InnerExceptions.Count}");
+}
+
+static async Task Fail(string n)
+{
+    await Task.Delay(100);
+    throw new InvalidOperationException($"{n} patladı");
+}`},
+{c:2,t:"Thread, Task.Run ve thread id",g:"new Thread ve Task.Run ile ayrı ayrı IsThreadPoolThread yazdır. Bir await öncesi ve sonrası thread id'yi yazdır.",k:["new Thread: False, Task.Run: True","await sonrası id farklı olabilir"],m:"Task bir iş birimidir ve genellikle ThreadPool'da çalışır. Thread ise işletim sistemi kaynağıdır. await sonrası devam, konsol uygulamasında herhangi bir pool thread'inde olabilir.",h:"Environment.CurrentManagedThreadId",s:`var th = new Thread(() =>
+    Console.WriteLine($"Thread -> pool mu? {Thread.CurrentThread.IsThreadPoolThread}"));
+th.Start(); th.Join();
+
+await Task.Run(() =>
+    Console.WriteLine($"Task.Run -> pool mu? {Thread.CurrentThread.IsThreadPoolThread}"));
+
+Console.WriteLine($"await öncesi id: {Environment.CurrentManagedThreadId}");
+await Task.Delay(100);
+Console.WriteLine($"await sonrası id: {Environment.CurrentManagedThreadId}");`},
+{c:2,t:"SemaphoreSlim ile eşzamanlılık sınırı",g:"6 iş başlat ama aynı anda en fazla 2 tanesi çalışsın. Her iş başlarken saniye/milisaniye ile yazdırsın.",k:["İşler ikişer ikişer, yaklaşık 1 sn arayla başlar"],m:"SemaphoreSlim, async uyumlu bir sayaçtır. Örneğin dış bir API'ye aynı anda giden istek sayısını sınırlamak için kullanılır. Release mutlaka finally içinde yapılır.",h:"await gate.WaitAsync(); try { … } finally { gate.Release(); }",s:`var gate = new SemaphoreSlim(2);
+var tasks = Enumerable.Range(1, 6).Select(async i =>
+{
+    await gate.WaitAsync();
+    try
+    {
+        Console.WriteLine($"{DateTime.Now:ss.fff} iş {i} başladı");
+        await Task.Delay(1000);
+    }
+    finally { gate.Release(); }
+});
+await Task.WhenAll(tasks);`},
+{c:3,t:"List, Dictionary ve HashSet arama hızı",g:"1 milyon elemanlı List, Dictionary ve HashSet oluştur. Son elemanı 1000 kez ara, üçünün süresini ölç.",k:["List çok yavaş (O(n))","Dictionary ve HashSet neredeyse anında (O(1))"],m:"List.Contains sırayla tarar. Dictionary ve HashSet hash tablosudur; ortalama O(1) arama yapar.",h:"list.ToDictionary(x => x), list.ToHashSet()",s:`using System.Diagnostics;
+
+const int N = 1_000_000;
+var list = Enumerable.Range(0, N).ToList();
+var dict = list.ToDictionary(x => x);
+var set = list.ToHashSet();
+
+var sw = Stopwatch.StartNew();
+for (int i = 0; i < 1000; i++) list.Contains(N - 1);
+Console.WriteLine($"List: {sw.ElapsedMilliseconds} ms");
+
+sw.Restart();
+for (int i = 0; i < 1000; i++) dict.ContainsKey(N - 1);
+Console.WriteLine($"Dictionary: {sw.ElapsedMilliseconds} ms");
+
+sw.Restart();
+for (int i = 0; i < 1000; i++) set.Contains(N - 1);
+Console.WriteLine($"HashSet: {sw.ElapsedMilliseconds} ms");`},
+{c:3,t:"HashSet ile tekrar edenleri bul",g:"Bir int dizisinde birden fazla geçen sayıları tek geçişte bul.",k:["[3,1,4,1,5,9,2,6,5,3] için 1, 5, 3"],m:"HashSet.Add eleman zaten varsa false döner. Bu sayede tek geçişte, O(n) sürede tekrarlar bulunur.",h:"if (!seen.Add(n)) dups.Add(n);",s:`int[] nums = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];
+var seen = new HashSet<int>();
+var dups = new HashSet<int>();
+foreach (var n in nums)
+    if (!seen.Add(n)) dups.Add(n);
+Console.WriteLine(string.Join(", ", dups)); // 1, 5, 3`},
+{c:3,t:"Stack ile parantez dengesi",g:"\"{[()]}\" gibi bir string'in parantezlerinin dengeli olup olmadığını Stack<char> ile kontrol eden IsBalanced yaz.",k:["{[()]} True","([)] False","(( False"],m:"Stack LIFO'dur: son açılan ilk kapanmalıdır. Kapanış geldiğinde tepedeki açılış onun eşi değilse dizi dengesizdir.",h:"Kapanış -> açılış eşlemesini Dictionary'de tut.",s:`Console.WriteLine(IsBalanced("{[()]}")); // True
+Console.WriteLine(IsBalanced("([)]"));   // False
+Console.WriteLine(IsBalanced("(("));     // False
+
+static bool IsBalanced(string s)
+{
+    var stack = new Stack<char>();
+    var pairs = new Dictionary<char, char> { [')'] = '(', [']'] = '[', ['}'] = '{' };
+    foreach (var c in s)
+    {
+        if (pairs.ContainsValue(c)) stack.Push(c);
+        else if (pairs.TryGetValue(c, out var open))
+        {
+            if (stack.Count == 0 || stack.Pop() != open) return false;
+        }
+    }
+    return stack.Count == 0;
+}`},
+{c:3,t:"Kendi generic Stack<T>'ini yaz",g:"Dizi tabanlı MyStack<T> yaz: Push, Pop, Peek, Count. Dizi dolunca kapasite iki katına çıksın.",k:["1..10 push edilince Pop 10, Peek 9, Count 9","Boşken Pop exception fırlatır"],m:"Kapasiteyi ikiye katlamak, Push'un amortize maliyetini O(1) yapar. List<T> de içeride aynı yöntemi kullanır.",h:"Array.Resize(ref _items, _items.Length * 2);",s:`var st = new MyStack<int>();
+for (int i = 1; i <= 10; i++) st.Push(i);
+Console.WriteLine($"{st.Pop()} {st.Peek()} {st.Count}"); // 10 9 9
+
+class MyStack<T>
+{
+    private T[] _items = new T[4];
+    public int Count { get; private set; }
+
+    public void Push(T item)
+    {
+        if (Count == _items.Length) Array.Resize(ref _items, _items.Length * 2);
+        _items[Count++] = item;
+    }
+    public T Pop()
+    {
+        if (Count == 0) throw new InvalidOperationException("Stack boş");
+        var item = _items[--Count];
+        _items[Count] = default!;
+        return item;
+    }
+    public T Peek() =>
+        Count == 0 ? throw new InvalidOperationException("Stack boş") : _items[Count - 1];
+}`},
+{c:3,t:"Kendi LinkedList'in ve Reverse",g:"Node ve MyList sınıflarını yaz: AddLast, Print, Reverse. Reverse yeni liste oluşturmadan, yerinde çalışsın.",k:["1 → 2 → 3 → 4, ters çevrilince 4 → 3 → 2 → 1"],m:"Yerinde ters çevirmede prev, cur ve next olmak üzere üç işaretçi kullanılır. O(n) zaman ve O(1) ek bellek gerekir; klasik bir mülakat sorusudur.",h:"var next = cur.Next; cur.Next = prev; prev = cur; cur = next;",s:`var list = new MyList();
+foreach (var x in new[] { 1, 2, 3, 4 }) list.AddLast(x);
+list.Print();
+list.Reverse();
+list.Print();
+
+class Node(int value) { public int Value = value; public Node? Next; }
+
+class MyList
+{
+    private Node? _head;
+
+    public void AddLast(int v)
+    {
+        var node = new Node(v);
+        if (_head is null) { _head = node; return; }
+        var cur = _head;
+        while (cur.Next is not null) cur = cur.Next;
+        cur.Next = node;
+    }
+    public void Reverse()
+    {
+        Node? prev = null, cur = _head;
+        while (cur is not null)
+        {
+            var next = cur.Next;
+            cur.Next = prev;
+            prev = cur;
+            cur = next;
+        }
+        _head = prev;
+    }
+    public void Print()
+    {
+        var parts = new List<int>();
+        for (var c = _head; c is not null; c = c.Next) parts.Add(c.Value);
+        Console.WriteLine(string.Join(" → ", parts));
+    }
+}`},
+{c:4,t:"Deferred execution",g:"Where içine Console.WriteLine koy. Sorguyu tanımladıktan sonra listeye eleman ekle, sonra foreach ile dolaş. En sonda ToList() çağır.",k:["Tanımlama anında hiçbir 'kontrol' yazılmaz","Sonradan eklenen 4 de sonuçta çıkar","ToList sorguyu bir kez daha çalıştırır"],m:"LINQ sorguları dolaşılana kadar çalışmaz. Her dolaşmada yeniden çalışır (multiple enumeration). ToList ile sonuç bir kez somutlaştırılır.",h:"var query = nums.Where(n => { Console.WriteLine(...); return n > 1; });",s:`var nums = new List<int> { 1, 2, 3 };
+var query = nums.Where(n =>
+{
+    Console.WriteLine($"kontrol {n}");
+    return n > 1;
+});
+Console.WriteLine("Sorgu tanımlandı, henüz çalışmadı");
+nums.Add(4);
+
+foreach (var n in query) Console.WriteLine($"-> {n}");
+var snapshot = query.ToList(); // tekrar çalışır`},
+{c:4,t:"GroupBy, Sum ve OrderBy ile rapor",g:"Ad, kategori, fiyat ve miktar içeren ürün listesi oluştur. Kategori bazında ürün sayısı ve toplam tutarı hesapla, tutara göre azalan sırala.",k:["Her kategori bir satır","En yüksek toplam en üstte"],m:"GroupBy anahtar başına bir IGrouping üretir. Select içinde Count, Sum gibi toplama fonksiyonları kullanılır. SQL'deki GROUP BY'ın karşılığıdır.",h:"g.Sum(p => p.Price * p.Qty)",s:`var products = new[]
+{
+    new { Name = "Pirinç",   Cat = "Kuru gıda", Price = 45m,  Qty = 10 },
+    new { Name = "Mercimek", Cat = "Kuru gıda", Price = 38m,  Qty = 5 },
+    new { Name = "Süt",      Cat = "Süt ürünü", Price = 30m,  Qty = 20 },
+    new { Name = "Peynir",   Cat = "Süt ürünü", Price = 180m, Qty = 2 },
+};
+
+var report = products
+    .GroupBy(p => p.Cat)
+    .Select(g => new { Cat = g.Key, Count = g.Count(), Total = g.Sum(p => p.Price * p.Qty) })
+    .OrderByDescending(x => x.Total);
+
+foreach (var r in report)
+    Console.WriteLine($"{r.Cat}: {r.Count} ürün, {r.Total:N2} TL");`},
+{c:4,t:"yield return ile sonsuz Fibonacci",g:"Sonsuz Fibonacci dizisi üreten bir IEnumerable<long> yaz. İlk 5'i atla, sonraki 5'i yazdır.",k:["Çıktı: 5 8 13 21 34","Program sonsuz döngüye girmez"],m:"yield return, durumu saklayan bir iterator üretir. Değerler istendikçe tek tek hesaplanır (lazy); bu yüzden sonsuz dizi güvenle Take ile kesilebilir.",h:"while (true) { yield return a; (a, b) = (b, a + b); }",s:`foreach (var f in Fib().Skip(5).Take(5)) Console.Write($"{f} ");
+
+static IEnumerable<long> Fib()
+{
+    long a = 0, b = 1;
+    while (true)
+    {
+        yield return a;
+        (a, b) = (b, a + b);
+    }
+}`},
+{c:4,t:"IEnumerable ve IQueryable",g:"Aynı listeyi IEnumerable olarak ve AsQueryable() ile filtrele. IQueryable'ın Expression'ını yazdır. Ayrıca bir Expression<Func<int,bool>> oluşturup Body'sini yazdır.",k:["IQueryable bir ifade ağacı gösterir","expr.Body çıktısı (x > 5)"],m:"IEnumerable sorguyu bellekte, delegate ile çalıştırır. IQueryable sorguyu ifade ağacı olarak tutar; EF Core bu ağacı SQL'e çevirir ve filtre veritabanında çalışır.",h:"using System.Linq.Expressions;",s:`using System.Linq.Expressions;
+
+var data = new List<int> { 1, 5, 8, 12 };
+IEnumerable<int> e = data.Where(x => x > 5);
+IQueryable<int> q = data.AsQueryable().Where(x => x > 5);
+
+Console.WriteLine(e.GetType().Name); // iterator
+Console.WriteLine(q.Expression);     // ifade ağacı
+
+Expression<Func<int, bool>> expr = x => x > 5;
+Console.WriteLine(expr.Body);        // (x > 5)
+Func<int, bool> compiled = expr.Compile();
+Console.WriteLine(compiled(8));      // True`},
+{c:5,t:"Func, Action ve Predicate",g:"Kendi Filter<T>(IEnumerable<T>, Func<T,bool>) metodunu LINQ kullanmadan yaz. Bir Action<string> logger ve bir Predicate<int> tanımlayıp kullan.",k:["Filter çift sayıları döndürür","Logger [LOG] önekiyle yazar"],m:"Func değer döndüren, Action döndürmeyen delegate'tir; Predicate ise bool döndüren Func'ın özel halidir. LINQ'nun Where'i tam olarak bu Filter'dır.",h:"foreach (var x in src) if (pred(x)) yield return x;",s:`int[] nums = [1, 2, 3, 4, 5, 6];
+Console.WriteLine(string.Join(",", Filter(nums, n => n % 2 == 0)));
+
+Action<string> log = m => Console.WriteLine($"[LOG] {m}");
+Predicate<int> isBig = n => n > 3;
+log($"4 büyük mü? {isBig(4)}");
+
+static IEnumerable<T> Filter<T>(IEnumerable<T> src, Func<T, bool> pred)
+{
+    foreach (var x in src)
+        if (pred(x)) yield return x;
+}`},
+{c:5,t:"Event ve abonelik",g:"TemperatureChanged event'i olan bir Thermostat yaz. İki abone eklensin: biri sıcaklığı göstersin, diğeri 30°C üstünde alarm versin.",k:["25'te sadece ekran yazar","32'de ekran ve alarm birlikte"],m:"event, delegate'in dışarıdan yalnızca += ve -= ile kullanılmasına izin verir; dışarıdan çağrılamaz. Publisher, abonelerini tanımadan onları bilgilendirir.",h:"public event EventHandler<int>? TemperatureChanged;",s:`var t = new Thermostat();
+t.TemperatureChanged += (_, temp) => Console.WriteLine($"Ekran: {temp}°C");
+t.TemperatureChanged += (_, temp) => { if (temp > 30) Console.WriteLine("Alarm!"); };
+t.Set(25);
+t.Set(32);
+
+class Thermostat
+{
+    public event EventHandler<int>? TemperatureChanged;
+    public void Set(int value) => TemperatureChanged?.Invoke(this, value);
+}`},
+{c:5,t:"Generic constraint ile Max<T>",g:"Herhangi bir karşılaştırılabilir tipte en büyük elemanı bulan Max<T>(params T[]) yaz. int ve string ile dene.",k:["Max(3, 9, 4) = 9","Max(\"elma\", \"zeytin\") = zeytin"],m:"where T : IComparable<T> kısıtı, derleyiciye T'nin CompareTo metoduna sahip olduğunu garanti eder. Kısıt olmadan T üzerinde bu metot çağrılamaz.",h:"if (i.CompareTo(best) > 0) best = i;",s:`Console.WriteLine(Max(3, 9, 4));          // 9
+Console.WriteLine(Max("elma", "zeytin")); // zeytin
+
+static T Max<T>(params T[] items) where T : IComparable<T>
+{
+    var best = items[0];
+    foreach (var i in items)
+        if (i.CompareTo(best) > 0) best = i;
+    return best;
+}`},
+{c:5,t:"Extension method: IsPalindrome",g:"string için IsPalindrome() extension metodu yaz. Büyük/küçük harf farkını yok saysın ve iki işaretçiyle çalışsın.",k:["\"Kayak\" True","\"Ankara\" False"],m:"Extension method, static bir class'ta ilk parametresi this ile işaretlenmiş static bir metottur. Tipi değiştirmeden ona metot eklenmiş gibi kullanılır; LINQ bu şekilde yazılmıştır.",h:"public static bool IsPalindrome(this string s)",s:`Console.WriteLine("Kayak".IsPalindrome());  // True
+Console.WriteLine("Ankara".IsPalindrome()); // False
+
+static class StringExt
+{
+    public static bool IsPalindrome(this string s)
+    {
+        int l = 0, r = s.Length - 1;
+        while (l < r)
+            if (char.ToLowerInvariant(s[l++]) != char.ToLowerInvariant(s[r--])) return false;
+        return true;
+    }
+}`},
+{c:6,t:"IDisposable ve using",g:"Açılırken ve Dispose edilirken log yazan bir Resource sınıfı yaz. using bloğunun içinde exception fırlat ve çıktı sırasını incele.",k:["Sıra: açıldı → kullanılıyor → kapatıldı → yakalandı"],m:"using, derleyicinin ürettiği bir try/finally'dir; exception olsa bile Dispose çağrılır. Dosya, bağlantı gibi yönetilmeyen kaynakları serbest bırakmak için kullanılır.",h:"class Resource : IDisposable",s:`try
+{
+    using var r = new Resource("bağlantı");
+    Console.WriteLine("Kullanılıyor");
+    throw new Exception("Hata!");
+}
+catch (Exception e) { Console.WriteLine($"Yakalandı: {e.Message}"); }
+
+class Resource : IDisposable
+{
+    private readonly string _name;
+    public Resource(string name) { _name = name; Console.WriteLine($"{name} açıldı"); }
+    public void Dispose() => Console.WriteLine($"{_name} kapatıldı");
+}`},
+{c:6,t:"GC'yi gözlemle: WeakReference",g:"Bir metotta büyük bir dizi oluşturup ona sadece WeakReference döndür. GC.Collect öncesi ve sonrası IsAlive değerini yazdır. Release modda çalıştır.",k:["Önce True, GC sonrası False","GC.MaxGeneration 2"],m:"GC, erişilemeyen nesneleri toplar. WeakReference nesneyi canlı tutmaz. Heap 0, 1 ve 2 olmak üzere nesillere ayrılır; uzun yaşayan nesneler üst nesle taşınır.",h:"dotnet run -c Release",s:`var weak = CreateAndForget();
+Console.WriteLine($"GC öncesi: {weak.IsAlive}");
+GC.Collect();
+GC.WaitForPendingFinalizers();
+Console.WriteLine($"GC sonrası: {weak.IsAlive}");
+Console.WriteLine($"Max nesil: {GC.MaxGeneration}");
+
+static WeakReference CreateAndForget() => new(new byte[10_000]);`},
+{c:7,t:"DI lifetime: Singleton, Scoped, Transient",g:"Microsoft.Extensions.DependencyInjection paketiyle üç servis kaydet. İki ayrı scope aç, her scope'ta her servisi iki kez çözümleyip Id'lerini yazdır.",k:["Singleton: her yerde aynı Id","Scoped: scope içinde aynı, scope'lar arasında farklı","Transient: her çözümlemede farklı"],m:"Singleton uygulama boyunca tek örnektir. Scoped, ASP.NET Core'da istek başına bir örnektir (DbContext gibi). Transient her istendiğinde yeni örnektir. Singleton içine scoped servis enjekte edilmez.",h:"dotnet add package Microsoft.Extensions.DependencyInjection",s:`using Microsoft.Extensions.DependencyInjection;
+
+var sp = new ServiceCollection()
+    .AddSingleton<SingletonSvc>()
+    .AddScoped<ScopedSvc>()
+    .AddTransient<TransientSvc>()
+    .BuildServiceProvider();
+
+for (int s = 1; s <= 2; s++)
+{
+    using var scope = sp.CreateScope();
+    var p = scope.ServiceProvider;
+    Console.WriteLine($"Scope {s}");
+    Show<SingletonSvc>(p);
+    Show<ScopedSvc>(p);
+    Show<TransientSvc>(p);
+}
+
+static void Show<T>(IServiceProvider p) where T : Svc =>
+    Console.WriteLine($"  {typeof(T).Name}: {p.GetRequiredService<T>().Id} / {p.GetRequiredService<T>().Id}");
+
+abstract class Svc { public string Id { get; } = Guid.NewGuid().ToString()[..4]; }
+class SingletonSvc : Svc { }
+class ScopedSvc : Svc { }
+class TransientSvc : Svc { }`},
+{c:7,t:"Dependency Inversion: bildirim servisi",g:"INotifier, EmailNotifier ve SmsNotifier yaz. OrderService bildirimciyi constructor'dan alsın. Sonra test için ekrana yazmak yerine mesajları listede biriktiren FakeNotifier ekle.",k:["OrderService koduna dokunmadan bildirim kanalı değişir","FakeNotifier ile gönderilen mesaj sayısı doğrulanır"],m:"Üst seviye modül somut sınıfa değil soyutlamaya bağlı olmalıdır. Bu, test edilebilirliği sağlar: gerçek servisin yerine sahte (fake) bir uygulama verilebilir.",h:"class OrderService(INotifier notifier)",s:`new OrderService(new SmsNotifier()).PlaceOrder("Sipariş #42");
+
+var fake = new FakeNotifier();
+new OrderService(fake).PlaceOrder("Sipariş #43");
+Console.WriteLine($"Fake'e giden mesaj: {fake.Sent.Count}"); // 1
+
+interface INotifier { void Send(string msg); }
+class EmailNotifier : INotifier { public void Send(string m) => Console.WriteLine($"E-posta: {m}"); }
+class SmsNotifier : INotifier { public void Send(string m) => Console.WriteLine($"SMS: {m}"); }
+class FakeNotifier : INotifier
+{
+    public List<string> Sent { get; } = [];
+    public void Send(string m) => Sent.Add(m);
+}
+
+class OrderService(INotifier notifier)
+{
+    public void PlaceOrder(string order)
+    {
+        Console.WriteLine($"{order} kaydedildi");
+        notifier.Send($"{order} alındı");
+    }
+}`},
+{c:7,t:"Open/Closed: Strategy ile indirim",g:"IDiscount interface'i ve üç indirim stratejisi yaz (yok, öğrenci %20, kampanya %40). PriceCalculator yeni indirim eklendiğinde değişmesin.",k:["Yeni indirim = yeni sınıf, mevcut kod değişmez"],m:"Open/Closed: genişlemeye açık, değişikliğe kapalı. if/else veya switch zincirleri yerine her davranış ayrı bir strateji sınıfına konur.",h:"decimal Apply(decimal price);",s:`var calc = new PriceCalculator();
+Console.WriteLine(calc.Final(1000, new NoDiscount()));
+Console.WriteLine(calc.Final(1000, new StudentDiscount()));
+Console.WriteLine(calc.Final(1000, new Campaign()));
+
+interface IDiscount { decimal Apply(decimal price); }
+class NoDiscount : IDiscount { public decimal Apply(decimal p) => p; }
+class StudentDiscount : IDiscount { public decimal Apply(decimal p) => p * 0.8m; }
+class Campaign : IDiscount { public decimal Apply(decimal p) => p * 0.6m; }
+
+class PriceCalculator
+{
+    public decimal Final(decimal price, IDiscount discount) => discount.Apply(price);
+}`},
+{c:8,t:"Custom exception, throw ve throw ex",g:"OrderNotFoundException adında, OrderId taşıyan bir exception yaz. Level2 bunu fırlatsın, Level1 yakalayıp yeniden fırlatsın. Stack trace'i önce throw; sonra throw ex; ile karşılaştır.",k:["throw; ile stack trace'te Level2 görünür","throw ex; ile iz Level1'den başlar"],m:"throw; orijinal stack trace'i korur. throw ex; izi sıfırlar ve hatanın asıl kaynağı kaybolur. Bu yüzden yeniden fırlatmada throw; kullanılır.",h:"catch (Exception) { throw; }",s:`try { Level1(); }
+catch (OrderNotFoundException e)
+{
+    Console.WriteLine($"{e.Message} (Id: {e.OrderId})");
+    Console.WriteLine(e.StackTrace);
+}
+
+static void Level1()
+{
+    try { Level2(); }
+    catch (Exception) { throw; } // sonra 'catch (Exception ex) { throw ex; }' ile dene
+}
+static void Level2() => throw new OrderNotFoundException(42);
+
+class OrderNotFoundException(int id) : Exception($"Sipariş bulunamadı: {id}")
+{
+    public int OrderId { get; } = id;
+}`},
+{c:8,t:"try içinde return ve finally",g:"try bloğunda bir değişkeni return eden, finally'de aynı değişkeni 99 yapıp log yazan bir metot yaz. Dönen değeri yazdır.",k:["Önce 'finally çalıştı' yazılır","Dönen değer 1'dir, 99 değil"],m:"finally, return olsa bile çalışır. Ancak dönüş değeri finally'den önce hesaplanıp saklanır; değer tipini finally'de değiştirmek sonucu etkilemez.",h:"try { return x; } finally { x = 99; }",s:`Console.WriteLine(Test());
+
+static int Test()
+{
+    int x = 1;
+    try { return x; }
+    finally
+    {
+        x = 99;
+        Console.WriteLine("finally çalıştı");
+    }
+}`},
+{c:3,t:"Koleksiyon interface'leri ve elle IEnumerator",a:[
+"`IEnumerable<T>` en temel koleksiyon sözleşmesidir ve sadece 'beni baştan sona dolaşabilirsin' der. Tek metodu `GetEnumerator()`'dır. Eleman sayısını bilmez, indeksle erişim sunmaz ve ekleme yapmaz.",
+"`IEnumerator<T>` dolaşmayı yapan imleçtir. `MoveNext()` sonraki elemana geçer ve eleman varsa true döner; `Current` o anki elemanı verir. Derleyici foreach'i tam olarak bu çağrılara çevirir.",
+"Hiyerarşi şöyledir: `ICollection<T>`, IEnumerable'a Count, Add, Remove ve Contains ekler. `IList<T>` buna indeksle erişim (this[int]) ve Insert ekler. Salt okunur karşılıkları `IReadOnlyCollection<T>` (Count) ve `IReadOnlyList<T>`'dir (indeks). `List<T>` ve diziler bunların hepsini uygular. Ancak bir dizi IList üzerinden Add veya Insert çağrılırsa NotSupportedException fırlatır.",
+"Kural: parametre olarak işini görecek en dar interface'i al; sadece dolaşacaksan IEnumerable<T> yeterlidir. Dönüş tipinde ise çağırana yeterince bilgi ver, örneğin IReadOnlyList<T>. IEnumerable alıp içeride iki kez dolaşmak multiple enumeration tuzağıdır; Count ve indeks gerekiyorsa IReadOnlyList iste."],
+g:"Kendi MyRange sınıfını yaz. IEnumerable<int> uygulasın ve yield kullanmadan, elle yazdığın bir RangeEnumerator : IEnumerator<int> döndürsün. foreach ile dolaş ve üzerinde LINQ'nun Where'ini çalıştır. Ardından aynı veriyi IEnumerable, IReadOnlyList ve IList parametreli üç metoda gönder; her birinde hangi üyelerin kullanılabildiğini dene.",
+k:["foreach 1 2 3 4 5 yazdırır","Where da çalışır çünkü LINQ sadece IEnumerable ister","IEnumerable parametresinde items.Count ve items[0] derlenmez"],
+m:"IEnumerable sadece dolaşmayı sağlar; ICollection sayma ve değiştirmeyi, IList ise indeksle erişimi ekler. Parametrede en dar interface'i, dönüşte IReadOnlyList gibi yeterince zengin ve salt okunur bir tipi tercih ederim.",
+h:"class RangeEnumerator(int start, int end) : IEnumerator<int> — Current, MoveNext, Reset, Dispose",
+s:`var range = new MyRange(1, 5);
+foreach (var n in range) Console.Write($"{n} ");
+Console.WriteLine();
+Console.WriteLine(string.Join(",", range.Where(n => n % 2 == 1))); // 1,3,5
+
+int[] data = [10, 20, 30];
+OnlyIterate(data);
+ReadOnly(data);
+Mutable(new List<int>(data)); // dizi verseydin Insert NotSupportedException fırlatırdı
+
+static void OnlyIterate(IEnumerable<int> items)
+{
+    foreach (var i in items) Console.Write($"{i} ");
+    Console.WriteLine($"| LINQ Count(): {items.Count()}");
+    // items[0] ve items.Count derlenmez
+}
+static void ReadOnly(IReadOnlyList<int> items) =>
+    Console.WriteLine($"İlk: {items[0]}, Count: {items.Count}");
+static void Mutable(IList<int> items)
+{
+    items.Insert(0, 5);
+    Console.WriteLine(string.Join(",", items)); // 5,10,20,30
+}
+
+class MyRange(int start, int end) : IEnumerable<int>
+{
+    public IEnumerator<int> GetEnumerator() => new RangeEnumerator(start, end);
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+class RangeEnumerator(int start, int end) : IEnumerator<int>
+{
+    private int _current = start - 1;
+    public int Current => _current;
+    object System.Collections.IEnumerator.Current => Current;
+    public bool MoveNext() => ++_current <= end;
+    public void Reset() => _current = start - 1;
+    public void Dispose() { }
+}`},
+{c:3,t:"PriorityQueue ve top-k",a:[
+"Priority queue (öncelik kuyruğu), elemanları geliş sırasına göre değil önceliğe göre çıkaran bir yapıdır. .NET 6'dan beri `PriorityQueue<TElement, TPriority>` hazır gelir ve en küçük önceliği ilk verir (min-heap).",
+"İçeride bir binary heap vardır: dizi üzerinde tutulan ve her ebeveynin çocuklarından küçük olduğu bir ağaç. Enqueue ve Dequeue O(log n), en küçüğe bakmak (Peek) O(1)'dir. Her seferinde tüm listeyi sıralamak ise O(n log n) olurdu.",
+"Max-heap gerekiyorsa önceliği eksi işaretiyle verebilir veya ters çalışan bir IComparer kullanabilirsin.",
+"Algoritma sorularında heap şu durumlarda kullanılır: en büyük veya en küçük k eleman, k sıralı listeyi birleştirme, Dijkstra en kısa yol ve görev zamanlama. Gerçek hayatta da önceliğe göre iş kuyruğu yönetimi buna örnektir."],
+g:"PriorityQueue ile aciliyeti yüksek şarj taleplerini önce işleyen bir kuyruk yaz (öncelik 1 en acil). Ardından bir int dizisindeki en büyük 3 sayıyı, boyutu 3'te tutulan bir min-heap ile bul.",
+k:["Talepler öncelik sırasıyla çıkar","[5,1,9,3,7,8] için en büyük 3: 7, 8, 9"],
+m:"PriorityQueue bir min-heap'tir; ekleme ve çıkarma O(log n) sürer. Top-k sorusunda boyutu k olan bir min-heap tutarsam toplam süre O(n log k) olur.",
+h:"Heap boyutu k'yı geçince Dequeue ile en küçüğü at.",
+s:`var queue = new PriorityQueue<string, int>();
+queue.Enqueue("Rutin şarj - Araç 12", 3);
+queue.Enqueue("Ambulans - Araç 7", 1);
+queue.Enqueue("Taksi - Araç 3", 2);
+while (queue.TryDequeue(out var job, out var prio))
+    Console.WriteLine($"[{prio}] {job}");
+
+Console.WriteLine(string.Join(", ", TopK([5, 1, 9, 3, 7, 8], 3)));
+
+static List<int> TopK(int[] nums, int k)
+{
+    var heap = new PriorityQueue<int, int>();
+    foreach (var n in nums)
+    {
+        heap.Enqueue(n, n);
+        if (heap.Count > k) heap.Dequeue(); // en küçüğü at
+    }
+    var result = new List<int>();
+    while (heap.Count > 0) result.Add(heap.Dequeue());
+    return result; // küçükten büyüğe
+}`},
+{c:9,t:"Nullable reference types ve null operatörleri",a:[
+"`NullReferenceException` .NET'te en sık karşılaşılan hatadır. C# 8 ile gelen nullable reference types, derleyiciye referans tiplerinin null olup olamayacağını söyler: `string` asla null olmamalı, `string?` null olabilir. Yeni projelerde `<Nullable>enable</Nullable>` varsayılan olarak açıktır.",
+"Null olabilecek bir değeri kontrol etmeden kullanırsan derleyici uyarı verir. Bu, çalışma zamanını değiştirmez; hataları kod yazarken yakalamanı sağlayan statik bir analizdir.",
+"Operatörler: `a?.B` (a null ise null döner, devam etmez), `a ?? b` (a null ise b), `a ??= b` (a null ise b'yi atar), `a!` (null-forgiving: 'eminim null değil' diyerek uyarıyı susturur, dikkatli kullanılmalı). Değer tiplerinde `int?` aslında `Nullable<int>`'tir ve HasValue/Value özellikleri vardır.",
+"Public metotlarda parametre doğrulamanın kısa yolu `ArgumentNullException.ThrowIfNull(x)`'tir."],
+g:"Customer (Name zorunlu; Email ve Address opsiyonel) ve Address (City) tanımla. Müşterinin şehrini güvenle döndüren, şehir yoksa \"Bilinmiyor\" yazan bir metot yaz. Yorumdaki satırı açarak bilerek uyarı üret ve uyarıyı oku. Bir de int? ile HasValue kullan.",
+k:["Address null olan müşteri için \"Bilinmiyor\"","Yorum satırı açılınca CS8602 (possible null reference) uyarısı"],
+m:"Nullable reference types derleme zamanında null akışını analiz eder. Null durumlarını ?., ?? ve ??= ile açıkça ele alırım. ! operatörünü sadece derleyicinin bilemediği ama benim kesin bildiğim durumlarda kullanırım.",
+h:"c.Address?.City ?? \"Bilinmiyor\"",
+s:`var a = new Customer("Ali") { Address = new Address("Ankara") };
+var b = new Customer("Ayşe");
+Console.WriteLine(CityOf(a)); // Ankara
+Console.WriteLine(CityOf(b)); // Bilinmiyor
+
+b.Email ??= "yok@ornek.com";
+Console.WriteLine(b.Email);
+
+// Console.WriteLine(b.Address.City); // aç: CS8602 uyarısı, çalıştır: NullReferenceException
+
+int? stock = null;
+Console.WriteLine(stock.HasValue ? $"Stok: {stock.Value}" : "Stok bilgisi yok");
+Console.WriteLine(stock.GetValueOrDefault()); // 0
+
+static string CityOf(Customer c) => c.Address?.City ?? "Bilinmiyor";
+
+record Address(string City);
+
+class Customer(string name)
+{
+    public string Name { get; } = name;
+    public string? Email { get; set; }
+    public Address? Address { get; set; }
+}`},
+{c:9,t:"Pattern matching ve switch expression",a:[
+"Pattern matching, bir değerin şeklini (tipini, özelliklerini, aralığını) kontrol etmeni ve aynı anda onu parçalarına ayırmanı sağlar. Uzun if/else ve cast zincirlerinin yerini alır.",
+"switch expression (`x switch { ... }`) değer döndüren kısa bir switch'tir. Kollar yukarıdan aşağıya denenir ve `_` her şeyi yakalar. Derleyici bazı durumların karşılanmadığını fark ederse uyarı verir.",
+"Desen türleri: type pattern (`Circle c`), property pattern (`{ Status: \"Faulted\" }`), relational pattern (`> 50`), logical pattern (`and`, `or`, `not`), `is null` / `is not null`, tuple pattern (`(a, b) switch`) ve list pattern (`[1, .., 9]`).",
+"Gerçek kullanımları: durum makineleri, komut veya mesaj tipine göre yönlendirme, kural tabanlı fiyatlandırma. OCPP gibi mesaj tabanlı protokollerde gelen mesajı tipine göre işlemek tam bir pattern matching işidir."],
+g:"Bir şarj seansının ücretini kWh ve müşteri tipine göre hesaplayan bir switch expression yaz (Kurumsal %15, Kurumsal ve 50 kWh üstü %20, bireysel 50 kWh üstü %5 indirim). Ardından object olarak gelen mesajları (BootNotification, Heartbeat, StatusNotification record'ları) tipine ve içeriğine göre işleyen bir switch yaz.",
+k:["Her kombinasyon doğru indirimi uygular","Faulted durumundaki StatusNotification ayrı kola düşer","Bilinmeyen mesaj _ koluna düşer"],
+m:"switch expression ve property/relational pattern'larla koşulları veri şekline göre bildirimsel olarak yazarım. Tip kontrolü ve cast tek adımda yapılır, derleyici de eksik durumlar için uyarır.",
+h:"msg switch { Heartbeat => ..., StatusNotification { Status: \"Faulted\" } s => ..., _ => ... }",
+s:`Console.WriteLine(Price(30, CustomerType.Bireysel));
+Console.WriteLine(Price(60, CustomerType.Kurumsal));
+
+object[] messages =
+[
+    new BootNotification("ABB", "Terra 54"),
+    new Heartbeat(),
+    new StatusNotification(1, "Faulted"),
+    new StatusNotification(2, "Available"),
+    "bozuk mesaj"
+];
+foreach (var m in messages) Console.WriteLine(Handle(m));
+
+static decimal Price(decimal kwh, CustomerType type)
+{
+    const decimal unit = 7.5m;
+    var discount = (type, kwh) switch
+    {
+        (CustomerType.Kurumsal, > 50) => 0.20m,
+        (CustomerType.Kurumsal, _)    => 0.15m,
+        (_, > 50)                     => 0.05m,
+        _                             => 0m
+    };
+    return kwh * unit * (1 - discount);
+}
+
+static string Handle(object msg) => msg switch
+{
+    BootNotification { Vendor: var v, Model: var model } => $"İstasyon açıldı: {v} {model}",
+    Heartbeat => "Kalp atışı alındı",
+    StatusNotification { Status: "Faulted" } s => $"ALARM: konnektör {s.ConnectorId} arızalı",
+    StatusNotification s => $"Konnektör {s.ConnectorId}: {s.Status}",
+    _ => $"Bilinmeyen mesaj: {msg}"
+};
+
+enum CustomerType { Bireysel, Kurumsal }
+record BootNotification(string Vendor, string Model);
+record Heartbeat;
+record StatusNotification(int ConnectorId, string Status);`},
+{c:9,t:"Tuple ve deconstruction",a:[
+"ValueTuple, birden fazla değeri ayrı bir sınıf yazmadan gruplamayı sağlar: `(int Min, int Max)`. Değer tipidir ve alanlarına isim verilebilir.",
+"Metottan birden fazla değer döndürmenin en okunur yollarından biridir ve out parametrelerinden daha temizdir. Ancak public API'lerde ve anlamı olan veriler için record daha iyidir, çünkü tuple'ın bir adı ve davranışı yoktur.",
+"Deconstruction, bir tuple'ı veya nesneyi değişkenlere ayırır: `var (min, max) = MinMax(arr);`. Kendi sınıflarına `Deconstruct(out ..., out ...)` metodu ekleyerek bunu destekletebilirsin; record'lar bunu otomatik yapar. `_` (discard) istemediğin parçayı atlamanı sağlar.",
+"Tuple ile değer değiştirme `(a, b) = (b, a)` ve sözlüklerde bileşik anahtar `Dictionary<(int, int), string>` sık kullanılan kısayollardır."],
+g:"Bir dizinin min, max ve ortalamasını tek geçişte bulup isimli bir tuple olarak döndüren bir metot yaz. Bir Point sınıfına Deconstruct ekle. Grid koordinatlarını (x, y) tuple anahtarlı bir Dictionary'de tut.",
+k:["var (min, max, avg) = ... çalışır","var (x, y) = point; çalışır","grid[(1, 2)] doğru değeri verir"],
+m:"Tuple'ları küçük ve yerel gruplamalar için kullanırım; anlamı ve davranışı olan veriler için record veya class tercih ederim. Deconstruct ile nesneleri parçalarına ayırabilirim.",
+h:"public void Deconstruct(out int x, out int y)",
+s:`var (min, max, avg) = Stats([4, 8, 15, 16, 23, 42]);
+Console.WriteLine($"min {min}, max {max}, ort {avg:F2}");
+
+var p = new Point(3, 7);
+var (px, py) = p;
+Console.WriteLine($"x={px}, y={py}");
+
+var grid = new Dictionary<(int X, int Y), string> { [(0, 0)] = "Başlangıç", [(1, 2)] = "Hedef" };
+Console.WriteLine(grid[(1, 2)]);
+
+var (_, onlyMax, _) = Stats([1, 2, 3]);
+Console.WriteLine(onlyMax);
+
+static (int Min, int Max, double Avg) Stats(int[] nums)
+{
+    int min = int.MaxValue, max = int.MinValue;
+    long sum = 0;
+    foreach (var n in nums) { min = Math.Min(min, n); max = Math.Max(max, n); sum += n; }
+    return (min, max, (double)sum / nums.Length);
+}
+
+class Point(int x, int y)
+{
+    public int X { get; } = x;
+    public int Y { get; } = y;
+    public void Deconstruct(out int outX, out int outY) { outX = X; outY = Y; }
+}`},
+{c:9,t:"const, readonly, init ve required",a:[
+"`const` derleme zamanında bilinen bir sabittir; değeri kullanıldığı her yere kopyalanır. Sadece sayı, string ve bool gibi basit tipler olabilir ve otomatik olarak static'tir.",
+"`readonly` bir alan ise çalışma zamanında, yalnızca tanımlandığı yerde veya constructor içinde atanabilir ve sonra değiştirilemez. `DateTime.Now` gibi çalışma zamanı değerlerini veya nesneleri tutabilir. Dikkat: readonly bir List'in referansı değişmez ama listeye eleman eklenebilir.",
+"Property tarafında `init` erişimcisi, değerin yalnızca nesne oluşturulurken (constructor'da veya `new X { A = 1 }` gibi bir object initializer'da) atanmasına izin verir. C# 11 ile gelen `required` ise o özelliğin initializer'da mutlaka verilmesini zorunlu kılar; unutursan kod derlenmez.",
+"Bu araçlarla immutable nesneler yazarsın. Oluşturulduktan sonra değişmeyen nesneler thread-safe'tir, hata ayıklamaları kolaydır ve DTO ile konfigürasyon için idealdir."],
+g:"Bir ChargingStation sınıfı yaz: Id required ve init olsun, MaxPowerKw init olsun, CreatedAt readonly bir alan olup constructor'da atansın. Varsayılan voltajı bir const ile tanımla. Required alanı vermeden nesne oluşturmayı ve sonradan bir init özelliğini değiştirmeyi dene, hataları oku.",
+k:["Id verilmezse CS9035 derleme hatası","Sonradan station.MaxPowerKw = 100 yazmak CS8852 verir","readonly List'e Add çalışır"],
+m:"const derleme zamanı sabitidir ve çağıran koda gömülür; readonly ise çalışma zamanında bir kez atanır. init ve required ile zorunlu alanları olan immutable nesneler tasarlarım.",
+h:"public required string Id { get; init; }",
+s:`var st = new ChargingStation { Id = "ANK-001", MaxPowerKw = 150 };
+Console.WriteLine($"{st.Id} {st.MaxPowerKw}kW {ChargingStation.DefaultVoltage}V {st.CreatedAt:HH:mm:ss}");
+
+st.Connectors.Add("CCS2"); // referans readonly, içerik değişebilir
+Console.WriteLine(string.Join(",", st.Connectors));
+
+// var bad = new ChargingStation { MaxPowerKw = 50 }; // CS9035: Id zorunlu
+// st.MaxPowerKw = 100;                                // CS8852: init-only
+
+class ChargingStation
+{
+    public const int DefaultVoltage = 400;
+    public readonly DateTime CreatedAt;
+    public readonly List<string> Connectors = [];
+
+    public required string Id { get; init; }
+    public int MaxPowerKw { get; init; } = 22;
+
+    public ChargingStation() => CreatedAt = DateTime.Now;
+}`},
+{c:9,t:"Value object, operator overloading ve dönüşümler",a:[
+"Value object, kimliği değil değeri önemli olan küçük bir nesnedir: 100 TL, başka bir 100 TL ile aynıdır. DDD'de para, adres ve koordinat gibi kavramlar value object olarak modellenir ve immutable olur.",
+"Operator overloading ile kendi tiplerine `+`, `-`, `==` ve `<` gibi operatörler tanımlarsın: `public static Money operator +(Money a, Money b)`. Böylece `price + tax` gibi doğal bir kod yazılabilir. > tanımlarsan < operatörünü de, == tanımlarsan != operatörünü de tanımlamak zorundasın.",
+"Dönüşüm operatörlerinde `implicit`, veri kaybı olmayan ve hata vermeyen dönüşümler için kullanılır. `explicit` ise cast gerektiren ve hata ya da veri kaybı riski taşıyan dönüşümler içindir.",
+"Kuralların yeri de value object'tir. Farklı para birimlerindeki tutarları toplamaya çalışmak exception fırlatmalıdır; böylece geçersiz bir işlem sistemin hiçbir yerinde yapılamaz."],
+g:"readonly record struct Money(decimal Amount, string Currency) yaz. + ve * operatörlerini tanımla; farklı para birimleri toplanmaya çalışılırsa exception fırlasın. decimal'dan TRY cinsinden Money'ye implicit, Money'den decimal'a explicit dönüşüm ekle. Ayrıca > ve < operatörlerini yaz.",
+k:["100 TRY + 18 TRY = 118 TRY","TRY + EUR exception fırlatır","Money m = 25m; çalışır, decimal'a dönüşüm ise cast ister"],
+m:"Value object'leri immutable record struct olarak yazar, iş kurallarını operatörlerin içine koyarım. implicit güvenli dönüşümler, explicit ise kayıplı veya riskli dönüşümler içindir.",
+h:"public static Money operator +(Money a, Money b)",
+s:`Money price = 100m;               // implicit: TRY
+var tax = new Money(18, "TRY");
+var total = price + tax;
+Console.WriteLine(total);
+Console.WriteLine(total * 2);
+Console.WriteLine(total > price);  // True
+decimal raw = (decimal)total;     // explicit
+Console.WriteLine(raw);
+
+try { var x = price + new Money(10, "EUR"); }
+catch (InvalidOperationException e) { Console.WriteLine(e.Message); }
+
+readonly record struct Money(decimal Amount, string Currency)
+{
+    public static Money operator +(Money a, Money b)
+    {
+        if (a.Currency != b.Currency)
+            throw new InvalidOperationException($"{a.Currency} ile {b.Currency} toplanamaz");
+        return a with { Amount = a.Amount + b.Amount };
+    }
+    public static Money operator *(Money a, decimal factor) => a with { Amount = a.Amount * factor };
+
+    public static bool operator >(Money a, Money b) =>
+        a.Currency == b.Currency ? a.Amount > b.Amount : throw new InvalidOperationException("Para birimi farklı");
+    public static bool operator <(Money a, Money b) => b > a;
+
+    public static implicit operator Money(decimal amount) => new(amount, "TRY");
+    public static explicit operator decimal(Money m) => m.Amount;
+}`},
+{c:9,t:"Generic variance: in ve out",a:[
+"`string` bir `object`'tir; peki `IEnumerable<string>` bir `IEnumerable<object>` midir? Evet, çünkü `IEnumerable<out T>` kovaryanttır (covariant). `List<string>` ise `List<object>` değildir; öyle olsaydı listeye bir int eklenebilir ve string listesi bozulurdu.",
+"Kovaryans (`out T`): T sadece çıktı olarak kullanılıyorsa, yani sadece döndürülüyorsa, daha özel bir tip daha genel bir tipin yerine geçebilir. Örnekler: IEnumerable<out T>, IReadOnlyList<out T>, Func<out TResult>.",
+"Kontravaryans (`in T`): T sadece girdi olarak kullanılıyorsa, yani parametre ise, ilişki tersine döner ve daha genel bir tip daha özel bir tipin yerine geçebilir. Bütün hayvanları besleyebilen bir besleyici köpekleri de besleyebilir. Örnekler: Action<in T>, IComparer<in T>.",
+"Varyans yalnızca interface ve delegate'lerde, yalnızca referans tipleri için çalışır. Kendi interface'inde `out` veya `in` işaretlersen derleyici T'yi yanlış yönde kullanmana izin vermez."],
+g:"Animal ve Dog sınıflarını yaz. IEnumerable<Dog>'u bir IEnumerable<Animal> değişkenine ata (çalışır), List<Dog>'u List<Animal>'a atamayı dene (derlenmez). Kendi IProducer<out T> ve IConsumer<in T> interface'lerini yazıp hangi atamaların derlendiğini gör.",
+k:["IEnumerable ataması derlenir, List ataması CS0029 verir","IProducer<Dog> → IProducer<Animal> ve IConsumer<Animal> → IConsumer<Dog> atamaları derlenir"],
+m:"out ile işaretlenen tip parametresi sadece çıktıda kullanılır ve kovaryanttır; in ile işaretlenen sadece girdide kullanılır ve kontravaryanttır. List<T> hem okuyup hem yazdığı için invariant'tır.",
+h:"interface IProducer<out T> { T Produce(); }",
+s:`IEnumerable<Dog> dogs = [new Dog("Karabaş")];
+IEnumerable<Animal> animals = dogs;            // kovaryans: derlenir
+// List<Animal> list = new List<Dog>();        // CS0029: derlenmez
+Console.WriteLine(animals.First().Name);
+
+IProducer<Animal> producer = new DogShelter();  // out T
+Console.WriteLine(producer.Produce().Name);
+
+IConsumer<Dog> feeder = new AnimalFeeder();     // in T
+feeder.Consume(new Dog("Fındık"));
+
+Action<Animal> pet = a => Console.WriteLine($"{a.Name} sevildi");
+Action<Dog> petDog = pet;                       // delegate kontravaryansı
+petDog(new Dog("Paşa"));
+
+class Animal(string name) { public string Name { get; } = name; }
+class Dog(string name) : Animal(name);
+
+interface IProducer<out T> { T Produce(); }
+interface IConsumer<in T> { void Consume(T item); }
+
+class DogShelter : IProducer<Dog> { public Dog Produce() => new("Barınak köpeği"); }
+class AnimalFeeder : IConsumer<Animal> { public void Consume(Animal a) => Console.WriteLine($"{a.Name} beslendi"); }`},
+{c:9,t:"Span<T> ile kopyasız parse",a:[
+"Bir string'in bir parçasını almak (Substring) veya bir dizinin bir bölümünü kopyalamak her seferinde yeni bellek ayırır. Yoğun çalışan kodda (parser'lar, protokol işleme) bu, çok sayıda geçici nesne ve GC yükü demektir.",
+"`Span<T>` mevcut bir belleğin (dizi, string ya da stack) bir dilimine kopya oluşturmadan bakan bir penceredir. `ReadOnlySpan<char>` ile bir string'i kopyalamadan parçalayabilirsin. Slice işlemi yeni bellek ayırmaz, sadece başlangıç ve uzunluk tutar.",
+"Span bir `ref struct`'tır ve sadece stack'te yaşar. Bu yüzden bir sınıfın alanı olamaz, boxing yapılamaz ve async metotlarda await üzerinden taşınamaz. Bu kısıtların sorun olduğu yerlerde heap'te saklanabilen `Memory<T>` kullanılır.",
+"`stackalloc` ile küçük geçici tamponlar heap yerine stack'te ayrılabilir. .NET'in kendi parser'ları (int.Parse, System.Text.Json) Span üzerine yazılmıştır."],
+g:"\"STATION:ANK-001;POWER:150;STATUS:Available\" formatındaki bir satırdan POWER değerini önce Split ile, sonra ReadOnlySpan<char> ile (IndexOf ve dilimleme kullanarak) çıkar. İki yöntemi 1 milyon kez çalıştırıp süreleri ve GC.GetAllocatedBytesForCurrentThread() farkını karşılaştır. Release modda çalıştır.",
+k:["İki yöntem de 150 bulur","Span versiyonu neredeyse hiç bellek ayırmaz","Split versiyonu yüzlerce MB ayırır"],
+m:"Span<T>, mevcut belleğin bir dilimine kopyasız erişim sağlayan bir ref struct'tır. Sık çalışan parse kodunda ara string'leri ortadan kaldırarak GC baskısını azaltır. Async metotlarda ve sınıf alanlarında Memory<T> kullanılır.",
+h:"ReadOnlySpan<char> rest = s; int sep = rest.IndexOf(';'); var part = rest[..sep];",
+s:`using System.Diagnostics;
+
+const string line = "STATION:ANK-001;POWER:150;STATUS:Available";
+const int N = 1_000_000;
+
+Measure("Split", () => ParseWithSplit(line));
+Measure("Span", () => ParseWithSpan(line));
+
+static void Measure(string name, Func<int> work)
+{
+    long before = GC.GetAllocatedBytesForCurrentThread();
+    var sw = Stopwatch.StartNew();
+    int result = 0;
+    for (int i = 0; i < N; i++) result = work();
+    long mb = (GC.GetAllocatedBytesForCurrentThread() - before) / 1024 / 1024;
+    Console.WriteLine($"{name}: {sw.ElapsedMilliseconds} ms, {mb} MB, sonuç {result}");
+}
+
+static int ParseWithSplit(string s)
+{
+    foreach (var part in s.Split(';'))
+    {
+        var kv = part.Split(':');
+        if (kv[0] == "POWER") return int.Parse(kv[1]);
+    }
+    return -1;
+}
+
+static int ParseWithSpan(string s)
+{
+    ReadOnlySpan<char> rest = s;
+    while (!rest.IsEmpty)
+    {
+        int sep = rest.IndexOf(';');
+        var part = sep >= 0 ? rest[..sep] : rest;
+        int colon = part.IndexOf(':');
+        if (part[..colon].SequenceEqual("POWER".AsSpan()))
+            return int.Parse(part[(colon + 1)..]);
+        rest = sep >= 0 ? rest[(sep + 1)..] : ReadOnlySpan<char>.Empty;
+    }
+    return -1;
+}`},
+{c:9,t:"Attribute ve reflection ile validator",a:[
+"Attribute, koda eklenen meta veridir: `[Obsolete]`, `[Required]`, `[HttpGet]` ve `[Fact]` birer attribute'tür. Kendi başlarına bir şey yapmazlar; davranışı onları okuyan kod (framework, derleyici, test runner) belirler.",
+"Reflection, tipleri çalışma zamanında incelemeni sağlar. Bir tipin property'lerini, metotlarını ve attribute'larını listeleyebilir, metotları isimle çağırabilir ve nesne oluşturabilirsin (`typeof(T).GetProperties()`, `Activator.CreateInstance`).",
+"ASP.NET Core'un model doğrulaması, EF Core'un tablo eşleştirmesi, DI container'ın constructor bulması ve xUnit'in test metotlarını keşfetmesi reflection ile çalışır.",
+"Bedeli şudur: reflection yavaştır ve derleme zamanı güvenliği sağlamaz. Bu yüzden sonuçlar önbelleğe alınır. Modern .NET'te aynı iş source generator'larla derleme zamanında da yapılabilir."],
+g:"Kendi [MaxLength(int)] ve [NotEmpty] attribute'larını yaz ve bir DTO'nun property'lerine ekle. Reflection ile herhangi bir nesnenin property'lerini dolaşıp bu kurallara göre hata listesi üreten genel bir Validator.Validate(object) metodu yaz.",
+k:["Boş isim ve uzun açıklama için iki hata mesajı","Validator hiçbir DTO tipini önceden bilmez"],
+m:"Attribute'lar meta veridir ve reflection ile çalışma zamanında okunur; ASP.NET Core validation ve EF Core konfigürasyonu bu şekilde çalışır. Performans gereken yerlerde reflection sonuçlarını önbelleğe alırım veya source generator kullanırım.",
+h:"prop.GetCustomAttribute<MaxLengthAttribute>()",
+s:`using System.Reflection;
+
+var dto = new CreateStationDto { Name = "", Description = new string('x', 120) };
+foreach (var error in Validator.Validate(dto)) Console.WriteLine(error);
+
+[AttributeUsage(AttributeTargets.Property)]
+class NotEmptyAttribute : Attribute { }
+
+[AttributeUsage(AttributeTargets.Property)]
+class MaxLengthAttribute(int length) : Attribute
+{
+    public int Length { get; } = length;
+}
+
+class CreateStationDto
+{
+    [NotEmpty, MaxLength(50)] public string Name { get; set; } = "";
+    [MaxLength(100)] public string Description { get; set; } = "";
+}
+
+static class Validator
+{
+    public static List<string> Validate(object obj)
+    {
+        var errors = new List<string>();
+        foreach (var prop in obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            var value = prop.GetValue(obj) as string ?? "";
+            if (prop.GetCustomAttribute<NotEmptyAttribute>() is not null && string.IsNullOrWhiteSpace(value))
+                errors.Add($"{prop.Name} boş olamaz");
+            if (prop.GetCustomAttribute<MaxLengthAttribute>() is { } max && value.Length > max.Length)
+                errors.Add($"{prop.Name} en fazla {max.Length} karakter olabilir (şu an {value.Length})");
+        }
+        return errors;
+    }
+}`},
+{c:9,t:"enum ve [Flags]",a:[
+"enum, isimlendirilmiş sabitlerden oluşan bir değer tipidir ve arka planda int'tir. Sihirli sayılar ve string'ler yerine kullanılır: `status == 3` yerine `status == ConnectorStatus.Charging` yazılır.",
+"`[Flags]` ile işaretlenen enum'larda değerler 2'nin kuvvetleri (1, 2, 4, 8) olarak seçilir. Böylece birden fazla değer bit düzeyinde birleştirilebilir: `Permissions.Read | Permissions.Write`. Kontrol `HasFlag` veya `(p & Permissions.Write) != 0` ile yapılır, bir bayrak `p &= ~Permissions.Write` ile kaldırılır.",
+"Dikkat: enum'a herhangi bir int cast edilebilir; `(ConnectorStatus)99` geçerli bir koddur. Dışarıdan gelen değerler `Enum.TryParse` ve `Enum.IsDefined` ile doğrulanmalıdır.",
+"EF Core enum'ları varsayılan olarak int olarak saklar; okunabilirlik için `HasConversion<string>()` ile string olarak da saklanabilirler. JSON'da ise `JsonStringEnumConverter` ile string olarak serileştirilirler."],
+g:"ConnectorStatus enum'ı (Available, Charging, Faulted) ve [Flags] UserPermissions enum'ı (Read, Write, Delete, Admin = hepsi) yaz. Bir kullanıcıya Read|Write ver, yetkileri kontrol et, sonra Write'ı kaldır. Dışarıdan gelen \"Charging\", \"Unknown\" ve \"99\" değerlerini güvenle dönüştür.",
+k:["Read|Write için HasFlag(Delete) False","Write kaldırılınca sadece Read kalır","\"Unknown\" ve \"99\" geçersiz sayılır"],
+m:"enum sihirli sayıların yerine geçer; [Flags] ile bit düzeyinde birleşen seçenekler modellenir. Herhangi bir int enum'a cast edilebildiği için dış girdileri TryParse ve IsDefined ile doğrularım.",
+h:"perms &= ~UserPermissions.Write;",
+s:`var perms = UserPermissions.Read | UserPermissions.Write;
+Console.WriteLine(perms);                                   // Read, Write
+Console.WriteLine(perms.HasFlag(UserPermissions.Delete));   // False
+perms &= ~UserPermissions.Write;
+Console.WriteLine(perms);                                   // Read
+Console.WriteLine(UserPermissions.Admin.HasFlag(UserPermissions.Delete)); // True
+
+foreach (var input in new[] { "Charging", "Unknown", "99" })
+{
+    if (Enum.TryParse<ConnectorStatus>(input, out var st) && Enum.IsDefined(st))
+        Console.WriteLine($"{input} -> {st} ({(int)st})");
+    else
+        Console.WriteLine($"{input} geçersiz");
+}
+
+enum ConnectorStatus { Available = 0, Charging = 1, Faulted = 2 }
+
+[Flags]
+enum UserPermissions
+{
+    None = 0, Read = 1, Write = 2, Delete = 4,
+    Admin = Read | Write | Delete
+}`},
+{c:10,t:"IAsyncEnumerable ve await foreach",a:[
+"IEnumerable elemanları senkron olarak üretir. Peki elemanlar asenkron geliyorsa ne olur? Sayfa sayfa API'den veri çekmek, veritabanındaki satırları akış halinde okumak veya bir cihazdan gelen ölçümleri işlemek bu duruma örnektir.",
+"`IAsyncEnumerable<T>` bu durum için tasarlanmıştır. Üreten metot `async IAsyncEnumerable<T>` olarak yazılır ve içinde hem `await` hem `yield return` kullanılabilir. Tüketen taraf `await foreach` ile dolaşır; her eleman hazır oldukça işlenir ve thread bloklanmaz.",
+"Tüm veriyi bir listeye doldurup döndürmek yerine akış halinde işlemek bellek kullanımını sabit tutar ve ilk sonucun çok daha erken gelmesini sağlar. EF Core'daki `AsAsyncEnumerable()` ve doğrudan IAsyncEnumerable döndüren ASP.NET Core endpoint'leri bunu kullanır.",
+"İptal için metoda `[EnumeratorCancellation] CancellationToken ct` parametresi eklenir; tüketici token'ı `.WithCancellation(token)` ile gönderir."],
+g:"Bir şarj istasyonundan her 300 ms'de bir güç ölçümü (kW) üreten async IAsyncEnumerable<double> yaz. await foreach ile tüket ve değer 5 kW'ın altına düşünce uyarı yazdır. 2 saniye sonra CancellationToken ile akışı durdur.",
+k:["Ölçümler geldikçe tek tek yazılır","2 sn sonra 'Akış durduruldu' görünür"],
+m:"IAsyncEnumerable, asenkron gelen verileri tamamını belleğe almadan akış halinde işlemeyi sağlar. Üreticide await ile yield return birlikte kullanılır, tüketim await foreach ile yapılır.",
+h:"static async IAsyncEnumerable<double> ReadPower([EnumeratorCancellation] CancellationToken ct = default)",
+s:`using System.Runtime.CompilerServices;
+
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+try
+{
+    await foreach (var kw in ReadPower().WithCancellation(cts.Token))
+        Console.WriteLine(kw < 5 ? $"UYARI: düşük güç {kw:F1} kW" : $"{kw:F1} kW");
+}
+catch (OperationCanceledException) { Console.WriteLine("Akış durduruldu"); }
+
+static async IAsyncEnumerable<double> ReadPower([EnumeratorCancellation] CancellationToken ct = default)
+{
+    var rnd = new Random();
+    while (true)
+    {
+        await Task.Delay(300, ct);
+        yield return rnd.NextDouble() * 50;
+    }
+}`},
+{c:10,t:"Channel<T> ile producer-consumer",a:[
+"Producer-consumer, bir tarafın iş ürettiği, diğer tarafın bu işleri işlediği klasik bir kalıptır. İki taraf farklı hızlarda çalışabilir ve aralarında bir tampon kuyruk bulunur.",
+"`System.Threading.Channels.Channel<T>`, .NET'in async uyumlu ve thread-safe kuyruğudur. `Writer.WriteAsync` ile yazılır, `Reader.ReadAllAsync()` ile `await foreach` içinde okunur. Okuyucu, kuyruk boşken thread'i bloklamadan bekler.",
+"`Channel.CreateBounded<T>(capacity)` kapasiteyi sınırlar: kuyruk dolunca yazan taraf bekler. Buna backpressure denir ve hızlı bir üreticinin belleği şişirmesini önler. Unbounded kanal ise sınırsızdır.",
+"Gerçek kullanımı: ASP.NET Core'da gelen istekleri bir kuyruğa atıp bir BackgroundService ile işlemek. Örneğin istasyonlardan gelen ölçüm mesajlarını hızlıca kabul edip ayrı bir işçiyle veritabanına toplu yazmak. Servisler arasında aynı rolü RabbitMQ gibi mesaj kuyrukları üstlenir; Channel ise tek bir process içindeki karşılığıdır."],
+g:"Kapasitesi 5 olan bounded bir Channel<MeterValue> oluştur. Bir üretici 20 ölçümü hızlıca yazsın; iki tüketici bunları okuyup her birini 200 ms'de işlesin. Üretici bitince Writer.Complete() çağır, tüketiciler bitince program kendiliğinden sonlansın.",
+k:["Üretici kuyruk dolunca bekler","20 ölçümün hepsi iki tüketiciye dağılarak işlenir","Program kendiliğinden biter"],
+m:"Channel, process içi async bir producer-consumer kuyruğudur ve bounded kanal ile backpressure sağlar. Servisler arasında aynı kalıp için RabbitMQ gibi bir message broker kullanılır.",
+h:"await foreach (var item in channel.Reader.ReadAllAsync())",
+s:`using System.Threading.Channels;
+
+var channel = Channel.CreateBounded<MeterValue>(5);
+
+var producer = Task.Run(async () =>
+{
+    for (int i = 1; i <= 20; i++)
+    {
+        await channel.Writer.WriteAsync(new MeterValue("ANK-001", i * 1.5));
+        Console.WriteLine($"  üretildi #{i}");
+    }
+    channel.Writer.Complete();
+});
+
+var consumers = Enumerable.Range(1, 2).Select(id => Task.Run(async () =>
+{
+    await foreach (var mv in channel.Reader.ReadAllAsync())
+    {
+        await Task.Delay(200);
+        Console.WriteLine($"Tüketici {id}: {mv.StationId} {mv.Kwh} kWh");
+    }
+})).ToArray();
+
+await producer;
+await Task.WhenAll(consumers);
+Console.WriteLine("Hepsi işlendi");
+
+record MeterValue(string StationId, double Kwh);`},
+{c:10,t:"CPU işi için Parallel ve PLINQ",a:[
+"İki farklı 'aynı anda' vardır. I/O-bound işler (HTTP, veritabanı, dosya) çoğunlukla beklemekten oluşur; bunlarda async/await kullanılır ve beklerken thread harcanmaz. CPU-bound işler (hesaplama, sıkıştırma, görüntü işleme) ise işlemciyi gerçekten meşgul eder; hız kazanmak için birden fazla çekirdeği aynı anda kullanmak gerekir.",
+"`Parallel.For` ve `Parallel.ForEach` CPU işini çekirdeklere dağıtır. .NET 6 ile gelen `Parallel.ForEachAsync` async işleri MaxDegreeOfParallelism sınırıyla paralel çalıştırır. PLINQ (`.AsParallel()`) ise bir LINQ sorgusunu paralel çalıştırır.",
+"Paralellik bedava değildir; işi bölmenin ve sonuçları birleştirmenin bir maliyeti vardır ve küçük işlerde seri koddan yavaş olabilir. Paylaşılan duruma yazmak race condition riski taşır. Her thread'in kendi sonucunu üretip sonda birleştirmek daha güvenlidir.",
+"Async I/O için Parallel.ForEach kullanmak yanlıştır çünkü thread'leri bloklar. CPU işi için sadece async/await yazmak da hız kazandırmaz. Doğru araç işin türüne göre seçilir."],
+g:"2'den 5.000.000'a kadar asal sayıları önce seri for ile, sonra Parallel.For (thread-local toplam ve Interlocked ile) ve PLINQ ile say; süreleri karşılaştır. Ardından 10 sahte HTTP çağrısını Parallel.ForEachAsync ile en fazla 3 eşzamanlı olacak şekilde çalıştır.",
+k:["Üç yöntem de 348513 asal bulur","Paralel versiyonlar çekirdek sayısına yakın oranda hızlanır","HTTP çağrıları üçerli gruplar halinde başlar"],
+m:"I/O-bound işlerde async/await, CPU-bound işlerde Parallel veya PLINQ kullanırım. Paralel kodda paylaşılan duruma yazmaktan kaçınır, sonuçları thread başına toplayıp sonda birleştiririm.",
+h:"Parallel.For(from, to, () => 0, (i, _, local) => ..., local => Interlocked.Add(ref total, local));",
+s:`using System.Diagnostics;
+
+const int N = 5_000_000;
+var sw = Stopwatch.StartNew();
+int serial = 0;
+for (int i = 2; i <= N; i++) if (IsPrime(i)) serial++;
+Console.WriteLine($"Seri: {serial} asal, {sw.ElapsedMilliseconds} ms");
+
+sw.Restart();
+int total = 0;
+Parallel.For(2, N + 1, () => 0,
+    (i, _, local) => IsPrime(i) ? local + 1 : local,
+    local => Interlocked.Add(ref total, local));
+Console.WriteLine($"Parallel.For: {total} asal, {sw.ElapsedMilliseconds} ms");
+
+sw.Restart();
+int plinq = Enumerable.Range(2, N - 1).AsParallel().Count(IsPrime);
+Console.WriteLine($"PLINQ: {plinq} asal, {sw.ElapsedMilliseconds} ms");
+
+await Parallel.ForEachAsync(Enumerable.Range(1, 10),
+    new ParallelOptions { MaxDegreeOfParallelism = 3 },
+    async (id, ct) =>
+    {
+        Console.WriteLine($"{DateTime.Now:ss.fff} istek {id}");
+        await Task.Delay(500, ct);
+    });
+
+static bool IsPrime(int n)
+{
+    if (n < 2) return false;
+    for (int d = 2; (long)d * d <= n; d++)
+        if (n % d == 0) return false;
+    return true;
+}`},
+{c:10,t:"Sync over async (.Result) ve ValueTask",a:[
+"`.Result`, `.Wait()` ve `GetAwaiter().GetResult()` bir Task'ı senkron olarak bekler; çağıran thread iş bitene kadar bloklanır. Buna sync-over-async denir.",
+"UI uygulamalarında ve eski ASP.NET'te (SynchronizationContext olan ortamlarda) bu deadlock'a yol açar. Thread `.Result` ile beklerken, await'ten sonraki kod da devam etmek için aynı thread'e dönmeyi bekler. İki taraf birbirini sonsuza kadar bekler.",
+"ASP.NET Core'da SynchronizationContext olmadığı için klasik deadlock oluşmaz. Ama her `.Result` bir ThreadPool thread'ini boşa bekletir; yük altında bu thread pool starvation'a ve uygulamanın topyekün yavaşlamasına yol açar.",
+"Kural: async'i baştan sona taşı (async all the way); controller'dan repository'ye kadar her katman async olmalıdır. `ValueTask<T>` ise çoğunlukla senkron tamamlanan sıcak yollarda (örneğin önbellekten dönen bir değer) her çağrıda bir Task nesnesi ayırmamak için kullanılır. Bir ValueTask yalnızca bir kez await edilebilir."],
+g:"200 isteği temsil eden 200 Task.Run içinde async GetDataAsync() metodunu (Task.Delay(500)) önce .Result ile, sonra await ile çağır ve toplam süreleri karşılaştır. Ardından değer önbellekteyse senkron dönen bir ValueTask<string> GetCachedAsync yaz.",
+k:[".Result versiyonu belirgin şekilde yavaştır (thread pool starvation)","await versiyonu yaklaşık 0,5 sn sürer","Önbellek isabetinde ikinci çağrı anında döner"],
+m:"Sync-over-async (.Result, .Wait) thread'i bloklar; context olan ortamlarda deadlock, ASP.NET Core'da thread pool starvation yaratır. Async'i uçtan uca taşırım. ValueTask'ı sık senkron tamamlanan sıcak yollarda allocation azaltmak için kullanırım.",
+h:"Task.Run(() => GetDataAsync().Result) ile Task.Run(async () => await GetDataAsync()) karşılaştırması",
+s:`using System.Diagnostics;
+
+var sw = Stopwatch.StartNew();
+await Task.WhenAll(Enumerable.Range(0, 200).Select(_ => Task.Run(() => GetDataAsync().Result)));
+Console.WriteLine($".Result ile: {sw.ElapsedMilliseconds} ms");
+
+sw.Restart();
+await Task.WhenAll(Enumerable.Range(0, 200).Select(_ => Task.Run(async () => await GetDataAsync())));
+Console.WriteLine($"await ile: {sw.ElapsedMilliseconds} ms");
+
+var cache = new Dictionary<string, string>();
+Console.WriteLine(await GetCachedAsync(cache, "ANK-001")); // yavaş yol
+Console.WriteLine(await GetCachedAsync(cache, "ANK-001")); // senkron, Task ayrılmaz
+
+static async Task<int> GetDataAsync()
+{
+    await Task.Delay(500);
+    return 42;
+}
+
+static ValueTask<string> GetCachedAsync(Dictionary<string, string> cache, string key)
+{
+    if (cache.TryGetValue(key, out var hit)) return ValueTask.FromResult(hit);
+    return new ValueTask<string>(LoadAsync());
+
+    async Task<string> LoadAsync()
+    {
+        await Task.Delay(300);
+        return cache[key] = $"{key} verisi";
+    }
+}`},
+{c:11,t:"Singleton ve Lazy<T>",a:[
+"Singleton, bir sınıftan uygulama boyunca yalnızca tek bir örnek olmasını garanti eder. Klasik yazımı private bir constructor ve örneği veren static bir property'den oluşur.",
+"Çok thread'li ortamda iki thread aynı anda 'örnek yok' görüp iki ayrı örnek oluşturabilir. En temiz thread-safe çözüm `Lazy<T>`'dir: değer ilk erişildiğinde, bir kez ve thread-safe şekilde oluşturulur.",
+"`Lazy<T>` tek başına da faydalıdır; pahalı bir nesneyi (büyük bir konfigürasyon, bir bağlantı) gerçekten ihtiyaç duyulana kadar oluşturmamayı sağlar.",
+"Modern .NET'te elle singleton yazmak yerine DI container'da `AddSingleton` tercih edilir. Aynı tek örnek garantisini verir, ama sınıf static bir bağımlılık olmadığı için test edilebilir kalır. Elle yazılmış singleton gizli bir global durum olduğundan çoğu zaman anti-pattern sayılır."],
+g:"Constructor'ı kaç kez çalıştığını sayan bir AppConfig sınıfını Lazy<T> ile thread-safe singleton yap. 10 Task'tan aynı anda Instance'a eriş ve kaç kez oluşturulduğunu yazdır. Sonra aynı sınıfı Lazy olmadan, kilitsiz '??=' ile yazıp testi tekrarla.",
+k:["Lazy versiyonunda tam 1 kez oluşturulur","Kilitsiz versiyonda birden fazla örnek oluşur (constructor'daki Sleep bunu belirginleştirir)"],
+m:"Thread-safe singleton için Lazy<T> kullanırım. Uygulama kodunda ise genellikle DI'da AddSingleton tercih ederim, çünkü sınıf böylece test edilebilir kalır.",
+h:"private static readonly Lazy<AppConfig> _lazy = new(() => new AppConfig());",
+s:`await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => Task.Run(() => AppConfig.Instance)));
+Console.WriteLine($"Lazy: {AppConfig.Created} kez oluşturuldu");
+
+await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => Task.Run(() => UnsafeConfig.Instance)));
+Console.WriteLine($"Kilitsiz: {UnsafeConfig.Created} kez oluşturuldu");
+
+sealed class AppConfig
+{
+    private static readonly Lazy<AppConfig> _lazy = new(() => new AppConfig());
+    public static AppConfig Instance => _lazy.Value;
+    public static int Created;
+    private AppConfig() { Interlocked.Increment(ref Created); Thread.Sleep(50); }
+}
+
+sealed class UnsafeConfig
+{
+    private static UnsafeConfig? _instance;
+    public static UnsafeConfig Instance => _instance ??= new UnsafeConfig();
+    public static int Created;
+    private UnsafeConfig() { Interlocked.Increment(ref Created); Thread.Sleep(50); }
+}`},
+{c:11,t:"Factory ile adaptör seçimi",a:[
+"Factory, nesne oluşturma mantığını onu kullanan koddan ayırır. Çağıran 'bana bir X ver' der; hangi somut sınıfın hangi parametrelerle oluşturulacağına factory karar verir.",
+"Simple factory, bir parametreye göre doğru alt sınıfı döndüren bir metottur. Factory method, oluşturma işini alt sınıflara bırakan sanal bir metottur. Abstract factory ise birbiriyle uyumlu nesne ailelerini oluşturan bir interface'tir.",
+"Böylece yeni bir tür eklendiğinde etkilenen tek yer factory olur. DI ile birleştiğinde factory genellikle tüm uygulamaları enjekte edilmiş olarak alır ve aralarından seçim yapar; bu durumda if/switch bile gerekmez.",
+"Örnek senaryo: farklı istasyon üreticilerinin (ABB, Siemens) farklı protokol davranışları için doğru adaptörü oluşturmak. .NET'teki `IHttpClientFactory` ve `ILoggerFactory` de factory örnekleridir."],
+g:"IChargerAdapter interface'ini ve AbbAdapter, SiemensAdapter, GenericOcppAdapter uygulamalarını yaz. ChargerAdapterFactory, istasyonun vendor bilgisine göre doğru adaptörü döndürsün; bilinmeyen vendor'da GenericOcppAdapter dönsün. Factory if/switch içermesin, adaptörleri IEnumerable<IChargerAdapter> olarak alsın.",
+k:["\"ABB\" için AbbAdapter","Bilinmeyen vendor için Generic adaptör","Yeni bir adaptör eklemek factory'yi değiştirmez"],
+m:"Factory, nesne oluşturma kararını tek bir yerde toplar ve çağıranı somut sınıflardan bağımsız tutar. Tüm uygulamaları DI ile alıp seçim yapan bir factory Open/Closed prensibine uyar.",
+h:"adapters.FirstOrDefault(a => a.CanHandle(vendor)) ?? fallback",
+s:`var factory = new ChargerAdapterFactory([new AbbAdapter(), new SiemensAdapter()], new GenericOcppAdapter());
+foreach (var vendor in new[] { "ABB", "Siemens", "Tesla" })
+    factory.Create(vendor).StartCharging("ANK-001");
+
+interface IChargerAdapter
+{
+    bool CanHandle(string vendor);
+    void StartCharging(string stationId);
+}
+
+class AbbAdapter : IChargerAdapter
+{
+    public bool CanHandle(string v) => v.Equals("ABB", StringComparison.OrdinalIgnoreCase);
+    public void StartCharging(string id) => Console.WriteLine($"[ABB] {id} şarj başladı");
+}
+
+class SiemensAdapter : IChargerAdapter
+{
+    public bool CanHandle(string v) => v.Equals("Siemens", StringComparison.OrdinalIgnoreCase);
+    public void StartCharging(string id) => Console.WriteLine($"[Siemens] {id} şarj başladı");
+}
+
+class GenericOcppAdapter : IChargerAdapter
+{
+    public bool CanHandle(string v) => true;
+    public void StartCharging(string id) => Console.WriteLine($"[OCPP 1.6] {id} şarj başladı");
+}
+
+class ChargerAdapterFactory(IEnumerable<IChargerAdapter> adapters, GenericOcppAdapter fallback)
+{
+    public IChargerAdapter Create(string vendor) =>
+        adapters.FirstOrDefault(a => a.CanHandle(vendor)) ?? fallback;
+}`},
+{c:11,t:"Decorator: önbellek ve log katmanı",a:[
+"Decorator, bir nesneyi aynı interface'i uygulayan başka bir nesneyle sarar. Asıl işi içteki nesneye devreder, öncesine veya sonrasına davranış ekler. Böylece asıl sınıfa dokunmadan loglama, önbellekleme, yeniden deneme ve süre ölçme gibi kesişen işler (cross-cutting concerns) eklenir.",
+"Decorator'lar üst üste sarılabilir: `new Logging(new Caching(new Repository()))`. Her katman tek bir iş yapar (Single Responsibility) ve çağıran yalnızca interface'i görür.",
+"ASP.NET Core middleware'leri, HttpClient'taki DelegatingHandler'lar ve MediatR pipeline behavior'ları aynı fikrin uygulamalarıdır.",
+"DI'da decorator kaydetmek için Scrutor kütüphanesinin `Decorate<TInterface, TDecorator>()` metodu sık kullanılır; bir factory lambda ile elle de kaydedilebilir."],
+g:"IStationRepository (GetAsync(id)) ve yavaş çalışan (500 ms) bir SqlStationRepository yaz. Ardından CachingStationRepository (sonucu bir Dictionary'de saklar) ve LoggingStationRepository (süreyi ölçüp loglar) decorator'larını yaz. Üçünü zincirleyip aynı id'yi iki kez iste.",
+k:["İlk çağrı ~500 ms, ikincisi ~0 ms","Log iki çağrıyı da gösterir","SqlStationRepository'de hiçbir değişiklik yapılmaz"],
+m:"Decorator ile mevcut bir implementasyonu değiştirmeden, aynı interface üzerinden önbellek, log veya retry eklerim. Middleware'ler ve MediatR behavior'ları da bu fikre dayanır.",
+h:"class CachingStationRepository(IStationRepository inner) : IStationRepository",
+s:`using System.Diagnostics;
+
+IStationRepository repo =
+    new LoggingStationRepository(
+        new CachingStationRepository(
+            new SqlStationRepository()));
+
+await repo.GetAsync("ANK-001");
+await repo.GetAsync("ANK-001");
+
+interface IStationRepository { Task<string> GetAsync(string id); }
+
+class SqlStationRepository : IStationRepository
+{
+    public async Task<string> GetAsync(string id)
+    {
+        await Task.Delay(500); // yavaş veritabanı
+        return $"Station {id}";
+    }
+}
+
+class CachingStationRepository(IStationRepository inner) : IStationRepository
+{
+    private readonly Dictionary<string, string> _cache = new();
+    public async Task<string> GetAsync(string id)
+    {
+        if (_cache.TryGetValue(id, out var hit)) return hit;
+        return _cache[id] = await inner.GetAsync(id);
+    }
+}
+
+class LoggingStationRepository(IStationRepository inner) : IStationRepository
+{
+    public async Task<string> GetAsync(string id)
+    {
+        var sw = Stopwatch.StartNew();
+        var result = await inner.GetAsync(id);
+        Console.WriteLine($"GetAsync({id}) {sw.ElapsedMilliseconds} ms -> {result}");
+        return result;
+    }
+}`},
+{c:11,t:"Result pattern",a:[
+"Exception'lar beklenmeyen durumlar içindir. 'Kullanıcı bulunamadı', 'bakiye yetersiz' veya 'istasyon meşgul' gibi iş kuralı hataları ise beklenen sonuçlardır. Bunları exception ile bildirmek hem pahalıdır (stack trace oluşturulur) hem de metodun imzasından görünmez.",
+"Result pattern'de metot, ya başarıyı (değeriyle birlikte) ya da hatayı (kod ve mesajıyla) içeren bir `Result<T>` döndürür. Hata ihtimali imzada görünür ve çağıran onu ele almak zorunda kalır.",
+"Hatalar genellikle `Error(Code, Message)` gibi bir tiple tanımlanır ve API katmanında HTTP durum kodlarına çevrilir: NotFound → 404, Conflict → 409, Validation → 400.",
+"Popüler kütüphaneler FluentResults, ErrorOr ve OneOf'tur. Clean Architecture ve CQRS projelerinde handler'ların Result döndürmesi yaygındır. Exception'lar ise gerçekten beklenmeyen durumlar (veritabanı çöktü gibi) için kalır."],
+g:"Result<T> ve Error tiplerini yaz (IsSuccess, Value, Error ve implicit dönüşümler). StartSession(stationId) metodu istasyon yoksa NotFound, meşgulse Conflict, aksi halde yeni bir SessionId döndürsün. Çağıran taraf sonucu switch ile HTTP koduna çevirsin.",
+k:["Var olmayan istasyon için 404","Meşgul istasyon için 409","Başarılı durumda 201 ve session id"],
+m:"Beklenen iş hatalarını Result<T> ile döndürürüm; hata ihtimali imzada görünür ve exception maliyeti oluşmaz. Beklenmeyen teknik hatalar için exception'ları korurum.",
+h:"public static implicit operator Result<T>(T value) => new(value, null);",
+s:`var busy = new HashSet<string> { "ANK-002" };
+foreach (var id in new[] { "ANK-001", "ANK-002", "XXX" })
+{
+    var result = StartSession(id, busy);
+    var http = result.IsSuccess
+        ? $"201 Created: {result.Value}"
+        : result.Error!.Code switch
+        {
+            "NotFound" => $"404: {result.Error.Message}",
+            "Conflict" => $"409: {result.Error.Message}",
+            _ => $"400: {result.Error.Message}"
+        };
+    Console.WriteLine($"{id} -> {http}");
+}
+
+static Result<Guid> StartSession(string stationId, HashSet<string> busy)
+{
+    if (!stationId.StartsWith("ANK")) return Errors.StationNotFound(stationId);
+    if (busy.Contains(stationId)) return Errors.StationBusy(stationId);
+    return Guid.NewGuid();
+}
+
+record Error(string Code, string Message);
+
+static class Errors
+{
+    public static Error StationNotFound(string id) => new("NotFound", $"{id} bulunamadı");
+    public static Error StationBusy(string id) => new("Conflict", $"{id} şu an meşgul");
+}
+
+sealed class Result<T>
+{
+    private Result(T? value, Error? error) { Value = value; Error = error; }
+    public T? Value { get; }
+    public Error? Error { get; }
+    public bool IsSuccess => Error is null;
+
+    public static implicit operator Result<T>(T value) => new(value, null);
+    public static implicit operator Result<T>(Error error) => new(default, error);
+}`},
+{c:11,t:"CQRS ve kendi mini Mediator'ın",a:[
+"CQRS (Command Query Responsibility Segregation), veriyi değiştiren işlemleri (command) ve veriyi okuyan işlemleri (query) ayrı modeller ve ayrı handler'lar olarak ayırır. Her use case tek bir sınıfta, tek bir sorumlulukla durur.",
+"Mediator, isteği gönderen ile onu işleyeni birbirinden ayırır. Controller handler'ı tanımaz, sadece `mediator.Send(new StartSessionCommand(...))` der. Mediator, request'in tipine bakarak doğru handler'ı bulur ve çağırır.",
+"MediatR bunu DI ve generic'lerle yapar: `IRequest<TResponse>` ve `IRequestHandler<TRequest, TResponse>`. Pipeline behavior'lar ise her request'in önüne ve arkasına doğrulama, loglama ve transaction gibi ortak davranışlar ekler; bu da decorator fikrinin bir uygulamasıdır.",
+"MediatR 2025'te ticari lisans modeline geçti. Kendi minimal mediator'ını yazabilmek bu yüzden hem mülakatta hem de projelerde değerlidir. Kendin yazınca MediatR'ın sihir olmadığını, birkaç generic interface ve bir DI çözümlemesinden ibaret olduğunu görürsün."],
+g:"IRequest<TResponse>, IRequestHandler<TRequest,TResponse> ve IPipelineBehavior arayüzlerini yaz. DI container'dan handler'ı tipine göre çözen basit bir Mediator.Send metodu yaz. Bir StartSessionCommand ve bir GetStationQuery handler'ı ile her request'in süresini loglayan bir behavior ekle.",
+k:["Send doğru handler'ı bulur","Behavior her request için süre loglar","Yeni bir use case için sadece yeni request ve handler eklenir, Mediator değişmez"],
+m:"CQRS ile okuma ve yazma use case'lerini ayrı handler'lara bölerim; mediator gönderen ile handler'ı birbirinden ayırır. MediatR temelde generic interface'ler, DI çözümlemesi ve pipeline behavior'lardan oluşur.",
+h:"typeof(IRequestHandler<,>).MakeGenericType(request.GetType(), typeof(TResponse))",
+s:`// dotnet add package Microsoft.Extensions.DependencyInjection
+using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
+
+var services = new ServiceCollection();
+services.AddSingleton<Mediator>();
+services.AddTransient<IRequestHandler<StartSessionCommand, Guid>, StartSessionHandler>();
+services.AddTransient<IRequestHandler<GetStationQuery, string>, GetStationHandler>();
+services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TimingBehavior<,>));
+var sp = services.BuildServiceProvider();
+
+var mediator = sp.GetRequiredService<Mediator>();
+var sessionId = await mediator.Send(new StartSessionCommand("ANK-001", "user-7"));
+var station = await mediator.Send(new GetStationQuery("ANK-001"));
+Console.WriteLine($"{sessionId} | {station}");
+
+interface IRequest<TResponse> { }
+
+interface IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
+{
+    Task<TResponse> Handle(TRequest request, CancellationToken ct);
+}
+
+interface IPipelineBehavior<TRequest, TResponse>
+{
+    Task<TResponse> Handle(TRequest request, Func<Task<TResponse>> next, CancellationToken ct);
+}
+
+class Mediator(IServiceProvider sp)
+{
+    public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default)
+    {
+        var requestType = request.GetType();
+
+        var handlerType = typeof(IRequestHandler<,>).MakeGenericType(requestType, typeof(TResponse));
+        var handler = sp.GetRequiredService(handlerType);
+        var handle = handlerType.GetMethod("Handle")!;
+        Func<Task<TResponse>> pipeline = () => (Task<TResponse>)handle.Invoke(handler, [request, ct])!;
+
+        var behaviorType = typeof(IPipelineBehavior<,>).MakeGenericType(requestType, typeof(TResponse));
+        var behaviorHandle = behaviorType.GetMethod("Handle")!;
+        foreach (var behavior in sp.GetServices(behaviorType).Reverse())
+        {
+            var next = pipeline;
+            pipeline = () => (Task<TResponse>)behaviorHandle.Invoke(behavior, [request, next, ct])!;
+        }
+        return pipeline();
+    }
+}
+
+record StartSessionCommand(string StationId, string UserId) : IRequest<Guid>;
+record GetStationQuery(string StationId) : IRequest<string>;
+
+class StartSessionHandler : IRequestHandler<StartSessionCommand, Guid>
+{
+    public Task<Guid> Handle(StartSessionCommand cmd, CancellationToken ct)
+    {
+        Console.WriteLine($"Seans başlatılıyor: {cmd.StationId} / {cmd.UserId}");
+        return Task.FromResult(Guid.NewGuid());
+    }
+}
+
+class GetStationHandler : IRequestHandler<GetStationQuery, string>
+{
+    public async Task<string> Handle(GetStationQuery q, CancellationToken ct)
+    {
+        await Task.Delay(100, ct);
+        return $"{q.StationId}: Available";
+    }
+}
+
+class TimingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+{
+    public async Task<TResponse> Handle(TRequest request, Func<Task<TResponse>> next, CancellationToken ct)
+    {
+        var sw = Stopwatch.StartNew();
+        var response = await next();
+        Console.WriteLine($"[{typeof(TRequest).Name}] {sw.ElapsedMilliseconds} ms");
+        return response;
+    }
+}`},
+{c:12,p:"web",t:"Middleware pipeline",a:[
+"ASP.NET Core'da her HTTP isteği bir middleware zincirinden geçer. Her middleware isteği alır, bir iş yapar, `next()` ile sıradakine devreder ve cevap geri dönerken tekrar araya girebilir. İstek içeri doğru, cevap dışarı doğru akan bir boru hattıdır (pipeline).",
+"Sıra kritiktir; middleware'ler `Program.cs`'te eklendikleri sırayla çalışır. Exception handling en başta olmalıdır ki sonrakilerin hatalarını yakalayabilsin. UseAuthentication da UseAuthorization'dan önce gelmelidir.",
+"Bir middleware `next()`'i çağırmazsa zinciri kısa devre yapar ve cevabı kendisi döner. Statik dosya sunumu ve rate limiting bu şekilde çalışır.",
+"Kendi middleware'ini satır içi olarak `app.Use(async (context, next) => { ... })` ile ya da `InvokeAsync(HttpContext)` metodu olan bir sınıfla yazabilirsin. İstek süresini ölçmek, correlation id eklemek ve API key kontrol etmek tipik örneklerdir."],
+g:"dotnet new web ile bir proje aç ve üç middleware yaz: 1) her isteğin süresini ölçüp loglayan, 2) her cevaba X-Correlation-Id header'ı ekleyen, 3) /admin ile başlayan isteklerde X-Api-Key header'ı yoksa 401 dönüp zinciri kısa devre yapan. Her biri girişte ve çıkışta log yazsın; sırayı gözlemle.",
+k:["Loglar giriş sırasıyla girer, ters sırayla çıkar (soğan katmanları gibi)","Key olmadan /admin isteği 401 döner ve endpoint çalışmaz","Cevapta X-Correlation-Id header'ı görünür"],
+m:"Middleware'ler sırayla çalışan bir pipeline oluşturur; her biri next() ile devreder veya kısa devre yapar. Sıra önemlidir: exception handling başta, authentication authorization'dan önce gelir.",
+h:"app.Use(async (ctx, next) => { ...; await next(ctx); ... });  —  test: curl -i http://localhost:PORT/admin/stats",
+s:`using System.Diagnostics;
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.Use(async (ctx, next) =>
+{
+    var sw = Stopwatch.StartNew();
+    Console.WriteLine("-> Timing");
+    await next(ctx);
+    Console.WriteLine($"<- Timing {ctx.Request.Path} {ctx.Response.StatusCode} {sw.ElapsedMilliseconds} ms");
+});
+
+app.UseMiddleware<CorrelationIdMiddleware>();
+
+app.Use(async (ctx, next) =>
+{
+    Console.WriteLine("-> ApiKey");
+    if (ctx.Request.Path.StartsWithSegments("/admin") && !ctx.Request.Headers.ContainsKey("X-Api-Key"))
+    {
+        ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await ctx.Response.WriteAsync("API key gerekli");
+        Console.WriteLine("<- ApiKey (kısa devre)");
+        return;
+    }
+    await next(ctx);
+    Console.WriteLine("<- ApiKey");
+});
+
+app.MapGet("/", () => "Merhaba");
+app.MapGet("/admin/stats", () => new { Stations = 12, Active = 4 });
+app.Run();
+
+class CorrelationIdMiddleware(RequestDelegate next)
+{
+    public async Task InvokeAsync(HttpContext ctx)
+    {
+        Console.WriteLine("-> Correlation");
+        var id = ctx.Request.Headers["X-Correlation-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+        ctx.Response.OnStarting(() =>
+        {
+            ctx.Response.Headers["X-Correlation-Id"] = id;
+            return Task.CompletedTask;
+        });
+        await next(ctx);
+        Console.WriteLine("<- Correlation");
+    }
+}`},
+{c:12,p:"web",t:"Konfigürasyon ve Options pattern",a:[
+"ASP.NET Core konfigürasyonu katmanlı olarak birden fazla kaynaktan okur: appsettings.json, ardından appsettings.{Environment}.json, user secrets (development'ta), ortam değişkenleri ve komut satırı. Sonra gelen kaynak öncekini ezer; bu sayede aynı kod production'da farklı değerlerle çalışır.",
+"Options pattern, bir konfigürasyon bölümünü güçlü tipli bir sınıfa bağlar. Servisler `IOptions<OcppOptions>` enjekte ederek string anahtarlarla uğraşmadan ayarları okur.",
+"`IOptions<T>` uygulama başında bir kez okunur (singleton). `IOptionsSnapshot<T>` her istekte yeniden okunur (scoped). `IOptionsMonitor<T>` ise değişiklikleri anlık izler ve singleton servislerde kullanılabilir.",
+"`ValidateDataAnnotations()` ve `ValidateOnStart()` ile hatalı veya eksik konfigürasyon uygulama açılırken yakalanır. Şifreler ve bağlantı string'leri repoya konmaz; development'ta user secrets, production'da ortam değişkenleri veya bir secret store kullanılır."],
+g:"appsettings.json'a bir Ocpp bölümü ekle (HeartbeatIntervalSeconds, MaxConnections, CentralSystemUrl). OcppOptions sınıfını yaz, [Range] ve [Required] ile doğrula, ValidateOnStart ekle. Bir endpoint bu ayarları IOptions ile döndürsün. Sonra ortam değişkeniyle (Ocpp__MaxConnections=500) değeri ez ve endpoint'in yeni değeri gösterdiğini gör.",
+k:["/config appsettings değerlerini döner","Ortam değişkeni appsettings'i ezer","HeartbeatIntervalSeconds = 0 yapınca uygulama açılmaz"],
+m:"Konfigürasyonu options pattern ile güçlü tipli sınıflara bağlar ve başlangıçta doğrularım. IOptions, IOptionsSnapshot ve IOptionsMonitor arasında yaşam süresine ve yeniden yükleme ihtiyacına göre seçim yaparım; sırları repoda tutmam.",
+h:"builder.Services.AddOptions<OcppOptions>().Bind(...).ValidateDataAnnotations().ValidateOnStart();",
+s:`// appsettings.json içine ekle:
+// "Ocpp": { "HeartbeatIntervalSeconds": 60, "MaxConnections": 100, "CentralSystemUrl": "ws://localhost:9000/ocpp" }
+
+using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Options;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOptions<OcppOptions>()
+    .Bind(builder.Configuration.GetSection(OcppOptions.Section))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+var app = builder.Build();
+
+app.MapGet("/config", (IOptions<OcppOptions> options) => options.Value);
+app.MapGet("/env", (IWebHostEnvironment env) => env.EnvironmentName);
+app.Run();
+
+public class OcppOptions
+{
+    public const string Section = "Ocpp";
+
+    [Range(10, 3600)] public int HeartbeatIntervalSeconds { get; set; }
+    [Range(1, 10_000)] public int MaxConnections { get; set; }
+    [Required] public string CentralSystemUrl { get; set; } = "";
+}
+
+// PowerShell'de ezmek için:
+// $env:Ocpp__MaxConnections = 500; dotnet run`},
+{c:12,p:"web",t:"Global exception handling ve ProblemDetails",a:[
+"Her endpoint'e try/catch yazmak tekrara ve tutarsız hata cevaplarına yol açar. Bunun yerine hatalar merkezi bir yerde yakalanır ve standart bir formatta döndürülür.",
+"ProblemDetails (RFC 9457), HTTP API hataları için standart bir JSON formatıdır: type, title, status, detail ve instance alanlarının yanında ek bilgiler de taşıyabilir. Böylece istemci her hatayı aynı şekilde işleyebilir.",
+"ASP.NET Core 8 ile gelen `IExceptionHandler` arayüzü, exception'ları yakalayıp cevaba çevirmenin modern yoludur. Kendi exception tiplerini (NotFoundException gibi) uygun durum kodlarına eşlersin. `AddProblemDetails()`, `AddExceptionHandler<T>()` ve `app.UseExceptionHandler()` ile devreye girer.",
+"Güvenlik açısından production'da stack trace ve iç hata mesajları istemciye gösterilmez, sadece loglanır. İstemciye bir traceId verilir; böylece destek ekibi logda o isteği bulabilir."],
+g:"NotFoundException ve BusinessRuleException tanımla. Bunları 404 ve 422'ye, diğer her şeyi 500'e çeviren bir IExceptionHandler yaz. Cevaplar ProblemDetails formatında olsun ve traceId içersin. Üç farklı hata fırlatan üç endpoint ile dene.",
+k:["/stations/999 → 404 ProblemDetails","POST /sessions/start → 422","/crash → 500; iç mesaj istemciye gitmez ama loglanır"],
+m:"Exception'ları IExceptionHandler ile merkezi olarak yakalar, domain exception'larını uygun HTTP kodlarına eşler ve ProblemDetails formatında dönerim. Detayları loglar, istemciye sadece traceId veririm.",
+h:"class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler",
+s:`using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+var app = builder.Build();
+app.UseExceptionHandler();
+
+app.MapGet("/stations/{id:int}", (int id) =>
+    id == 1 ? Results.Ok(new { Id = 1, Name = "ANK-001" }) : throw new NotFoundException($"İstasyon {id} bulunamadı"));
+app.MapPost("/sessions/start", () => { throw new BusinessRuleException("İstasyon şu an arızalı"); });
+app.MapGet("/crash", () => { throw new InvalidOperationException("Gizli iç detay: bağlantı bilgisi"); });
+app.Run();
+
+class NotFoundException(string message) : Exception(message);
+class BusinessRuleException(string message) : Exception(message);
+
+class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+{
+    public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
+    {
+        var (status, title) = ex switch
+        {
+            NotFoundException => (StatusCodes.Status404NotFound, "Kaynak bulunamadı"),
+            BusinessRuleException => (StatusCodes.Status422UnprocessableEntity, "İş kuralı ihlali"),
+            _ => (StatusCodes.Status500InternalServerError, "Beklenmeyen bir hata oluştu")
+        };
+
+        if (status == 500) logger.LogError(ex, "İşlenmeyen hata");
+        else logger.LogWarning("{Title}: {Message}", title, ex.Message);
+
+        var problem = new ProblemDetails
+        {
+            Status = status,
+            Title = title,
+            Detail = status == 500 ? null : ex.Message,
+            Instance = ctx.Request.Path
+        };
+        problem.Extensions["traceId"] = ctx.TraceIdentifier;
+
+        ctx.Response.StatusCode = status;
+        await ctx.Response.WriteAsJsonAsync(problem, ct);
+        return true;
+    }
+}`},
+{c:12,p:"web",t:"BackgroundService ve PeriodicTimer",a:[
+"Web uygulamaları sadece isteklere cevap vermez; arka planda periyodik veya sürekli çalışan işler de gerekir. Süresi dolan rezervasyonları iptal etmek, kuyruktaki mesajları işlemek ve bağlantısı kopan istasyonları tespit etmek bu işlere örnektir.",
+"`BackgroundService`, uygulamayla birlikte başlayıp kapanan uzun ömürlü bir servis yazmak için kullanılan temel sınıftır. Sadece `ExecuteAsync(CancellationToken stoppingToken)` metodunu yazarsın. Uygulama kapanırken token iptal edilir ve döngünün düzgünce sonlanması gerekir. Servis `AddHostedService<T>()` ile kaydedilir.",
+"Periyodik işler için `PeriodicTimer` kullanılır: `while (await timer.WaitForNextTickAsync(ct))`. Task.Delay döngüsünden farkı, tick'lerin kaymaması ve async uyumlu olmasıdır.",
+"Hosted service singleton'dır. Bu yüzden DbContext gibi scoped bir servisi doğrudan constructor'dan alamazsın (captive dependency); her döngüde `IServiceScopeFactory.CreateScope()` ile yeni bir scope açıp servisi oradan çözmelisin. Ayrıca ExecuteAsync içinde yakalanmayan bir exception, .NET 6'dan beri varsayılan olarak tüm uygulamayı durdurur; döngünün içi try/catch ile korunmalıdır."],
+g:"Bir web projesine HeartbeatMonitor adlı bir BackgroundService ekle. Her 5 saniyede bir, scoped IStationStore üzerinden son heartbeat'i 15 saniyeden eski olan istasyonları bulup 'Offline' olarak işaretlesin. POST /stations/{id}/heartbeat endpoint'i heartbeat zamanını güncellesin. Scope'u IServiceScopeFactory ile aç.",
+k:["Heartbeat göndermeyen istasyon 15–20 sn içinde Offline olur","Düzenli heartbeat gönderen istasyon Online kalır","Uygulama Ctrl+C ile düzgün kapanır"],
+m:"Arka plan işleri için BackgroundService ve PeriodicTimer kullanırım. Hosted service singleton olduğu için scoped servisleri her iterasyonda IServiceScopeFactory ile açtığım scope'tan çözer, döngüyü try/catch ile korurum.",
+h:"using var scope = scopeFactory.CreateScope(); var store = scope.ServiceProvider.GetRequiredService<IStationStore>();",
+s:`using System.Collections.Concurrent;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<StationDb>();                // sahte veritabanı
+builder.Services.AddScoped<IStationStore, StationStore>();
+builder.Services.AddHostedService<HeartbeatMonitor>();
+var app = builder.Build();
+
+app.MapPost("/stations/{id}/heartbeat", (string id, IStationStore store) =>
+{
+    store.Heartbeat(id);
+    return Results.Ok();
+});
+app.MapGet("/stations", (StationDb db) => db.Stations.Values);
+app.Run();
+
+record StationState(string Id, DateTime LastHeartbeat, string Status);
+
+class StationDb
+{
+    public ConcurrentDictionary<string, StationState> Stations { get; } = new();
+}
+
+interface IStationStore
+{
+    void Heartbeat(string id);
+    int MarkOffline(TimeSpan timeout);
+}
+
+class StationStore(StationDb db) : IStationStore
+{
+    public void Heartbeat(string id) =>
+        db.Stations[id] = new StationState(id, DateTime.UtcNow, "Online");
+
+    public int MarkOffline(TimeSpan timeout)
+    {
+        int count = 0;
+        foreach (var s in db.Stations.Values)
+        {
+            if (s.Status == "Online" && DateTime.UtcNow - s.LastHeartbeat > timeout)
+            {
+                db.Stations[s.Id] = s with { Status = "Offline" };
+                count++;
+            }
+        }
+        return count;
+    }
+}
+
+class HeartbeatMonitor(IServiceScopeFactory scopeFactory, ILogger<HeartbeatMonitor> logger) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        while (await timer.WaitForNextTickAsync(stoppingToken))
+        {
+            try
+            {
+                using var scope = scopeFactory.CreateScope();
+                var store = scope.ServiceProvider.GetRequiredService<IStationStore>();
+                var n = store.MarkOffline(TimeSpan.FromSeconds(15));
+                if (n > 0) logger.LogWarning("{Count} istasyon offline oldu", n);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Heartbeat kontrolü başarısız");
+            }
+        }
+    }
+}`},
+{c:12,p:"web",t:"HttpClientFactory ve resilience",a:[
+"HttpClient'ı her istekte `new` ile oluşturup dispose etmek, kapanan bağlantıların soketleri bir süre tutması nedeniyle yük altında soket tükenmesine yol açar. Tek bir static HttpClient kullanmak ise DNS değişikliklerinin kaçırılmasına neden olabilir.",
+"`IHttpClientFactory` iki sorunu da çözer: alttaki bağlantı handler'larını havuzda tutar ve belirli aralıklarla yeniler. Typed client yaklaşımında `AddHttpClient<FlakyClient>(...)` ile kaydedilen sınıf, constructor'dan önceden yapılandırılmış bir HttpClient alır.",
+"Dış servisler geçici olarak hata verebilir (timeout, 503). Dayanıklılık (resilience) kalıpları şunlardır: retry (üstel bekleme ile yeniden deneme), timeout ve circuit breaker (sürekli hata veren servise bir süre istek göndermeyi kesme). .NET 8'de `Microsoft.Extensions.Http.Resilience` paketindeki `.AddStandardResilienceHandler()` bunları tek satırda ekler; altında Polly vardır.",
+"Retry yalnızca idempotent, yani tekrarlandığında sonucu değişmeyen isteklerde güvenlidir. Ödeme gibi işlemlerde idempotency key kullanılmadan yapılan otomatik retry çift tahsilata yol açabilir."],
+g:"Bir web projesinde, %50 ihtimalle 503 dönen sahte bir /flaky endpoint'i yaz. Bu endpoint'i çağıran bir typed client (FlakyClient) yazıp AddHttpClient ile kaydet. /test endpoint'i istemciyi 10 kez çağırsın. Önce resilience olmadan kaç hata alındığını gör, sonra AddStandardResilienceHandler ekleyip tekrarla.",
+k:["Resilience olmadan yaklaşık yarısı hata verir","Resilience ile neredeyse hepsi başarılı olur","Loglarda yeniden denemeler görünür"],
+m:"HttpClient'ı IHttpClientFactory ve typed client'larla kullanırım; bu, soket tükenmesini ve DNS sorunlarını önler. Dış çağrılara retry, timeout ve circuit breaker eklerim; retry'ı sadece idempotent işlemlerde kullanırım.",
+h:"dotnet add package Microsoft.Extensions.Http.Resilience",
+s:`// dotnet add package Microsoft.Extensions.Http.Resilience
+var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://localhost:5080");
+
+builder.Services.AddHttpClient<FlakyClient>(c => c.BaseAddress = new Uri("http://localhost:5080"))
+    .AddStandardResilienceHandler(); // önce bu satır olmadan dene
+
+var app = builder.Build();
+
+app.MapGet("/flaky", () =>
+    Random.Shared.Next(2) == 0 ? Results.StatusCode(503) : Results.Ok("veri"));
+
+app.MapGet("/test", async (FlakyClient client) =>
+{
+    int ok = 0, fail = 0;
+    for (int i = 0; i < 10; i++)
+    {
+        if (await client.TryGetAsync()) ok++;
+        else fail++;
+    }
+    return new { ok, fail };
+});
+app.Run();
+
+class FlakyClient(HttpClient http)
+{
+    public async Task<bool> TryGetAsync()
+    {
+        try
+        {
+            var res = await http.GetAsync("/flaky");
+            return res.IsSuccessStatusCode;
+        }
+        catch (Exception) { return false; }
+    }
+}`},
+{c:12,p:"web",t:"JWT ile authentication ve authorization",a:[
+"Authentication 'sen kimsin?' sorusudur (kimlik doğrulama), authorization ise 'bunu yapmaya yetkin var mı?' sorusudur (yetkilendirme). Önce kimlik doğrulanır, sonra yetki kontrol edilir; middleware sırasının UseAuthentication → UseAuthorization olmasının sebebi budur.",
+"JWT (JSON Web Token) üç parçadan oluşur: header.payload.signature. Payload'da claim'ler (kullanıcı id, rol, son kullanma zamanı) bulunur. Bu kısım şifreli değildir, sadece Base64 ile kodlanmıştır ve herkes okuyabilir. Güvenliği sağlayan imzadır: sunucu, token'ın kendisi tarafından üretildiğini ve değiştirilmediğini imzayla doğrular.",
+"JWT stateless'tır; sunucu oturum tutmaz ve her istekte gelen token'ı doğrular. Bedeli, token'ı süresi dolmadan iptal etmenin zor olmasıdır. Bu yüzden access token kısa ömürlü tutulur ve yenilemek için refresh token kullanılır.",
+"Yetkilendirme rol bazlı (`RequireRole(\"Admin\")`) veya policy bazlı (`RequireClaim` ya da özel gereksinimler) yapılabilir. Payload'a asla hassas veri konmaz ve imza anahtarı repoda tutulmaz."],
+g:"Microsoft.AspNetCore.Authentication.JwtBearer paketiyle bir web projesi kur. POST /login, sabit kullanıcı adı ve şifreler için rol claim'li bir JWT üretsin. /me giriş yapmış herkese açık olsun ve claim'leri döndürsün; /admin yalnızca Admin rolüne açık olsun. Üretilen token'ı jwt.io'da açıp payload'ı oku.",
+k:["Token olmadan /me → 401","Operator token'ıyla /admin → 403","Admin token'ıyla /admin → 200"],
+m:"Authentication kimliği, authorization yetkiyi doğrular. JWT imzalı ama şifresiz bir token'dır: payload herkes tarafından okunabilir, imza ise içeriğin değiştirilmediğini kanıtlar. Access token'ı kısa ömürlü tutar, refresh token ile yenilerim.",
+h:"Header: Authorization: Bearer <token>",
+s:`// dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Gerçek projede anahtar user secrets veya ortam değişkeninden okunur
+var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("bu-sadece-pratik-icin-en-az-32-karakterlik-anahtar"));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o => o.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true, ValidIssuer = "voltline",
+        ValidateAudience = true, ValidAudience = "voltline-api",
+        ValidateLifetime = true,
+        IssuerSigningKey = key
+    });
+builder.Services.AddAuthorization();
+
+var app = builder.Build();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapPost("/login", (LoginRequest req) =>
+{
+    string? role = (req.Username, req.Password) switch
+    {
+        ("admin", "1234") => "Admin",
+        ("operator", "1234") => "Operator",
+        _ => null
+    };
+    if (role is null) return Results.Unauthorized();
+
+    var claims = new[]
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, req.Username),
+        new Claim(ClaimTypes.Role, role)
+    };
+    var token = new JwtSecurityToken("voltline", "voltline-api", claims,
+        expires: DateTime.UtcNow.AddMinutes(15),
+        signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+
+    return Results.Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+});
+
+app.MapGet("/me", (ClaimsPrincipal user) =>
+    user.Claims.Select(c => new { c.Type, c.Value })).RequireAuthorization();
+
+app.MapGet("/admin", () => "Gizli yönetim paneli")
+    .RequireAuthorization(p => p.RequireRole("Admin"));
+
+app.Run();
+
+record LoginRequest(string Username, string Password);`},
+{c:12,p:"web",t:"ILogger ile structured logging",a:[
+"Log'lar production'da neler olduğunu görmenin tek yoludur. `ILogger<T>`, ASP.NET Core'un yerleşik loglama soyutlamasıdır; DI ile her sınıfa enjekte edilir ve arkasında Console, Serilog veya Seq gibi farklı sağlayıcılar olabilir.",
+"Log seviyeleri Trace, Debug, Information, Warning, Error ve Critical'dır. appsettings'teki `Logging:LogLevel` ayarıyla hangi seviyenin yazılacağı kategori (genellikle sınıf adı) bazında belirlenir. Production'da genellikle Information ve üstü yazılır.",
+"Structured logging'de `logger.LogInformation(\"Seans {SessionId} başladı\", id)` yazdığında mesaj şablonu ve parametreler ayrı ayrı saklanır; Seq veya Elasticsearch gibi araçlarda SessionId'ye göre filtreleme yapabilirsin. String interpolation (`$\"...\"`) kullanırsan bu yapı kaybolur, ayrıca log seviyesi kapalı olsa bile string oluşturulur.",
+"`BeginScope`, bir grup log'a ortak bağlam (CorrelationId, StationId) ekler. Yüksek performans gereken yerlerde `[LoggerMessage]` source generator ile allocation yapmayan log metotları üretilir."],
+g:"Bir web projesinde SessionService yaz ve ILogger<SessionService> enjekte et. Seans başlatma ve bitirmede structured log at; bitirmede tüketilen kWh'yi parametre olarak ver. StationId'yi BeginScope ile ekle. appsettings'te SessionService kategorisini Debug'a, Microsoft'u Warning'e ayarla. JSON console formatter'ı açıp parametrelerin ayrı alanlar olarak yazıldığını gör. Bir log'u da [LoggerMessage] ile yaz.",
+k:["JSON çıktıda SessionId ve StationId ayrı alanlardır","Microsoft'un Information logları görünmez","SessionService'in Debug logları görünür"],
+m:"ILogger ile mesaj şablonlu structured log yazarım; parametreler ayrı alanlar olarak saklanır ve sorgulanabilir. String interpolation kullanmam, seviyeleri konfigürasyondan yönetir, scope ile bağlam eklerim.",
+h:"builder.Logging.AddJsonConsole(o => o.IncludeScopes = true);",
+s:`// appsettings.json:
+// "Logging": { "LogLevel": { "Default": "Information", "Microsoft": "Warning", "SessionService": "Debug" } }
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Logging.ClearProviders();
+builder.Logging.AddJsonConsole(o => o.IncludeScopes = true);
+builder.Services.AddSingleton<SessionService>();
+var app = builder.Build();
+
+app.MapPost("/sessions/{stationId}", (string stationId, SessionService svc) => svc.Run(stationId));
+app.Run();
+
+partial class SessionService(ILogger<SessionService> logger)
+{
+    public async Task<Guid> Run(string stationId)
+    {
+        var sessionId = Guid.NewGuid();
+        using (logger.BeginScope(new Dictionary<string, object> { ["StationId"] = stationId }))
+        {
+            logger.LogInformation("Seans {SessionId} başladı", sessionId);
+            logger.LogDebug("Konnektör kilitlendi");
+            await Task.Delay(300);
+            var kwh = Math.Round(Random.Shared.NextDouble() * 40, 2);
+            LogSessionCompleted(logger, sessionId, kwh);
+        }
+        return sessionId;
+    }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Seans {SessionId} bitti, {Kwh} kWh tüketildi")]
+    static partial void LogSessionCompleted(ILogger logger, Guid sessionId, double kwh);
+}`},
+{c:13,t:"DbContext, change tracking ve AsNoTracking",a:[
+"DbContext, veritabanıyla konuşan bir oturumdur (Unit of Work). Sorgu yapar, değişiklikleri izler ve `SaveChanges` çağrıldığında biriken tüm değişiklikleri tek bir transaction içinde veritabanına yazar. Kısa ömürlüdür; web'de istek başına bir tane oluşturulur (Scoped).",
+"Change tracking: sorguyla gelen her entity varsayılan olarak izlenir. Bir property'yi değiştirip SaveChanges çağırırsan EF Core neyin değiştiğini kendisi bulur ve sadece o kolon için UPDATE üretir. Entity'nin durumu Unchanged, Modified, Added, Deleted veya Detached olabilir (`ctx.Entry(x).State`).",
+"İzlemenin bir maliyeti vardır: her entity'nin orijinal değerlerinin bir kopyası tutulur. Sadece okuma yapacağın sorgularda (listeler, raporlar) `AsNoTracking()` kullanmak daha hızlıdır ve daha az bellek harcar.",
+"`ToQueryString()` ve `LogTo(Console.WriteLine)` ile EF Core'un ürettiği SQL'i görebilirsin. SQL'i okumayı alışkanlık haline getir; performans sorunlarının çoğu orada görünür."],
+g:"Microsoft.EntityFrameworkCore.Sqlite ile bir Station (Id, Name, Status) entity'si ve AppDbContext yaz; LogTo ile SQL'i konsola bas. Birkaç istasyon ekle. Sonra: 1) tracked bir sorguyla bir istasyonun Status'unu değiştirip SaveChanges çağır ve UPDATE'i gör, 2) aynısını AsNoTracking ile yap ve hiçbir UPDATE üretilmediğini gör, 3) her adımda Entry(x).State değerini yazdır.",
+k:["Tracked değişiklikte sadece Status kolonu için UPDATE üretilir","AsNoTracking ile SaveChanges 0 döner","State sırası: Unchanged → Modified, AsNoTracking'de Detached"],
+m:"DbContext bir unit of work'tür ve change tracker ile değişiklikleri izler; SaveChanges hepsini tek bir transaction'da yazar. Salt okunur sorgularda AsNoTracking kullanır, üretilen SQL'i loglardan kontrol ederim.",
+h:"o.UseSqlite(\"Data Source=pratik.db\").LogTo(Console.WriteLine, LogLevel.Information)",
+s:`// dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+using (var ctx = new AppDbContext())
+{
+    ctx.Database.EnsureDeleted();
+    ctx.Database.EnsureCreated();
+    ctx.Stations.AddRange(new Station { Name = "ANK-001" }, new Station { Name = "ANK-002" });
+    ctx.SaveChanges();
+}
+
+using (var ctx = new AppDbContext())
+{
+    var s = ctx.Stations.First(x => x.Name == "ANK-001");
+    Console.WriteLine($"State: {ctx.Entry(s).State}");   // Unchanged
+    s.Status = "Charging";
+    Console.WriteLine($"State: {ctx.Entry(s).State}");   // Modified
+    ctx.SaveChanges();                                    // UPDATE ... SET "Status"
+}
+
+using (var ctx = new AppDbContext())
+{
+    var s = ctx.Stations.AsNoTracking().First(x => x.Name == "ANK-002");
+    Console.WriteLine($"State: {ctx.Entry(s).State}");   // Detached
+    s.Status = "Faulted";
+    Console.WriteLine($"Kaydedilen satır: {ctx.SaveChanges()}"); // 0
+    Console.WriteLine(ctx.Stations.Where(x => x.Status == "Available").ToQueryString());
+}
+
+class Station
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public string Status { get; set; } = "Available";
+}
+
+class AppDbContext : DbContext
+{
+    public DbSet<Station> Stations => Set<Station>();
+    protected override void OnConfiguring(DbContextOptionsBuilder o) =>
+        o.UseSqlite("Data Source=pratik.db").LogTo(Console.WriteLine, LogLevel.Information);
+}`},
+{c:13,t:"N+1 problemi, Include ve projection",a:[
+"İlişkili veriler (bir istasyonun konnektörleri, bir seansın ölçümleri) navigation property ile modellenir: `Station.Connectors`. EF Core bu ilişkileri varsayılan olarak otomatik yüklemez.",
+"N+1 problemi şudur: önce N istasyonu tek sorguyla çekersin, sonra döngüde her istasyonun konnektörlerini ayrı ayrı sorgularsın ve toplam 1 + N sorgu gider. 1000 istasyon, 1001 veritabanı turu demektir. Lazy loading açıksa bu durum kodda hiç görünmeden oluşur; en sinsi performans sorunlarından biridir.",
+"Çözümler: `Include(s => s.Connectors)` ile ilişkiyi aynı sorguda JOIN ile yüklemek (eager loading) ya da daha iyisi, `Select` ile sadece ihtiyaç duyulan alanları bir DTO'ya projekte etmek. Projection hem tek sorgu üretir hem de gereksiz kolonları çekmez.",
+"Birden çok koleksiyonu Include etmek kartezyen patlamaya (satır sayısının katlanarak artmasına) yol açabilir. Bu durumda `AsSplitQuery()` ilişkileri ayrı ama sınırlı sayıda sorguyla yükler."],
+g:"Station ve Connector (1-N) ilişkisini kur; 50 istasyon ve her birine 2 konnektör ekle. Çalışan SQL komutlarını say: 1) istasyonları çekip döngüde her biri için konnektörleri ayrı sorgula (N+1), 2) Include ile çek, 3) Select ile StationDto(Name, ConnectorCount, AvailableCount) projeksiyonu yap.",
+k:["N+1: 51 sorgu","Include: 1 sorgu","Projection: 1 sorgu, sadece gerekli kolonlar"],
+m:"N+1, bir liste çekip her eleman için ayrı sorgu atmaktır. Include ile eager loading yapar ya da tercihen Select ile DTO'ya projekte ederek tek ve sade bir sorgu üretirim. Çoklu koleksiyonlarda AsSplitQuery kullanırım.",
+h:"ctx.Stations.Select(s => new StationDto(s.Name, s.Connectors.Count, s.Connectors.Count(c => c.Status == \"Available\")))",
+s:`// dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+using Microsoft.EntityFrameworkCore;
+
+using (var ctx = new AppDbContext())
+{
+    ctx.Database.EnsureDeleted();
+    ctx.Database.EnsureCreated();
+    for (int i = 1; i <= 50; i++)
+        ctx.Stations.Add(new Station
+        {
+            Name = $"ANK-{i:000}",
+            Connectors = [new Connector { Type = "CCS2" }, new Connector { Type = "Type2", Status = "Charging" }]
+        });
+    ctx.SaveChanges();
+}
+
+Run("N+1", ctx =>
+{
+    foreach (var s in ctx.Stations.ToList())
+    {
+        var count = ctx.Connectors.Count(c => c.StationId == s.Id);
+    }
+});
+
+Run("Include", ctx =>
+{
+    var list = ctx.Stations.Include(s => s.Connectors).AsNoTracking().ToList();
+});
+
+Run("Projection", ctx =>
+{
+    var list = ctx.Stations
+        .Select(s => new StationDto(s.Name, s.Connectors.Count, s.Connectors.Count(c => c.Status == "Available")))
+        .ToList();
+    Console.WriteLine(list[0]);
+});
+
+static void Run(string name, Action<AppDbContext> work)
+{
+    using var ctx = new AppDbContext();
+    work(ctx);
+    Console.WriteLine($"{name}: {ctx.QueryCount} sorgu");
+}
+
+record StationDto(string Name, int ConnectorCount, int AvailableCount);
+
+class Station
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public List<Connector> Connectors { get; set; } = [];
+}
+
+class Connector
+{
+    public int Id { get; set; }
+    public int StationId { get; set; }
+    public required string Type { get; set; }
+    public string Status { get; set; } = "Available";
+}
+
+class AppDbContext : DbContext
+{
+    public int QueryCount;
+    public DbSet<Station> Stations => Set<Station>();
+    public DbSet<Connector> Connectors => Set<Connector>();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder o) =>
+        o.UseSqlite("Data Source=pratik.db")
+         .LogTo(msg => { if (msg.Contains("Executed DbCommand")) QueryCount++; },
+                new[] { DbLoggerCategory.Database.Command.Name });
+}`},
+{c:13,t:"Optimistic concurrency ve transaction",a:[
+"İki kullanıcı aynı anda aynı kaydı değiştirirse varsayılan olarak son yazan kazanır (last write wins) ve ilk değişiklik sessizce kaybolur. Aynı konnektörün iki kişi tarafından aynı anda rezerve edilmesi bu tür bir hatadır.",
+"Optimistic concurrency, çakışmanın nadir olduğunu varsayar ve kilit kullanmaz. Satırda bir sürüm alanı (concurrency token) tutulur ve UPDATE'e `WHERE Id = @id AND Version = @eskiVersion` koşulu eklenir. Satır bu arada değiştiyse güncellenen satır sayısı 0 olur ve EF Core `DbUpdateConcurrencyException` fırlatır.",
+"SQL Server'da `[Timestamp] byte[] RowVersion` alanı otomatik artar; PostgreSQL'de xmin sistem kolonu kullanılır. Diğer veritabanlarında bir Guid veya int alan `[ConcurrencyCheck]` ile işaretlenir ve her güncellemede elle değiştirilir.",
+"Transaction ise birden fazla işlemin ya hep birlikte başarılı olmasını ya da hiç gerçekleşmemesini garanti eder (atomicity). Tek bir SaveChanges zaten bir transaction'dır; birden fazla SaveChanges'ı birlikte korumak için `BeginTransaction()` kullanılır. Çakışmanın sık olduğu durumlarda pessimistic locking (SELECT ... FOR UPDATE) tercih edilir."],
+g:"Connector entity'sine [ConcurrencyCheck] Guid Version alanı ekle (SQLite). İki ayrı DbContext ile aynı konnektörü oku ve ikisinde de rezerve etmeye çalış. İkinci SaveChanges'ta DbUpdateConcurrencyException'ı yakalayıp anlamlı bir mesaj ver. Ardından bir rezervasyonu ve bir ödeme kaydını tek transaction'da yaz, ikinci adımda exception fırlatarak rollback'i gör.",
+k:["İlk rezervasyon başarılı olur, ikincisi çakışma mesajı verir","Veritabanında ReservedBy ilk kullanıcıdır","Rollback sonrası 'can' ve ödeme kaydı yazılmaz"],
+m:"Eşzamanlı güncellemelerde optimistic concurrency kullanırım: bir sürüm alanıyla UPDATE'e koşul eklenir, çakışmada DbUpdateConcurrencyException yakalanır. Birden fazla işlemi atomik yapmak için transaction kullanırım.",
+h:"catch (DbUpdateConcurrencyException) { ... }",
+s:`// dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
+
+using (var setup = new AppDbContext())
+{
+    setup.Database.EnsureDeleted();
+    setup.Database.EnsureCreated();
+    setup.Connectors.Add(new Connector { Id = 1 });
+    setup.SaveChanges();
+}
+
+using (var ctxA = new AppDbContext())
+using (var ctxB = new AppDbContext())
+{
+    var a = ctxA.Connectors.Find(1)!;
+    var b = ctxB.Connectors.Find(1)!;
+
+    Reserve(a, "ali");
+    ctxA.SaveChanges();
+    Console.WriteLine("Ali rezerve etti");
+
+    try
+    {
+        Reserve(b, "ayse");
+        ctxB.SaveChanges();
+    }
+    catch (DbUpdateConcurrencyException)
+    {
+        Console.WriteLine("Ayşe: konnektör bu arada başkası tarafından rezerve edildi, lütfen yenileyin");
+    }
+}
+
+using (var ctx = new AppDbContext())
+{
+    using var tx = ctx.Database.BeginTransaction();
+    try
+    {
+        var c = ctx.Connectors.Find(1)!;
+        Reserve(c, "can");
+        ctx.SaveChanges();
+        ctx.Payments.Add(new Payment { Amount = 150 });
+        throw new InvalidOperationException("Ödeme sağlayıcısı cevap vermedi");
+    }
+    catch (Exception e)
+    {
+        tx.Rollback();
+        Console.WriteLine($"Rollback: {e.Message}");
+    }
+}
+
+using (var ctx = new AppDbContext())
+    Console.WriteLine($"Son durum: {ctx.Connectors.Find(1)!.ReservedBy}, ödeme sayısı {ctx.Payments.Count()}");
+
+static void Reserve(Connector c, string user)
+{
+    c.Status = "Reserved";
+    c.ReservedBy = user;
+    c.Version = Guid.NewGuid(); // her güncellemede yeni sürüm
+}
+
+class Connector
+{
+    public int Id { get; set; }
+    public string Status { get; set; } = "Available";
+    public string? ReservedBy { get; set; }
+    [ConcurrencyCheck] public Guid Version { get; set; } = Guid.NewGuid();
+}
+
+class Payment
+{
+    public int Id { get; set; }
+    public decimal Amount { get; set; }
+}
+
+class AppDbContext : DbContext
+{
+    public DbSet<Connector> Connectors => Set<Connector>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    protected override void OnConfiguring(DbContextOptionsBuilder o) => o.UseSqlite("Data Source=pratik.db");
+}`},
+{c:14,p:"test",t:"xUnit ile unit test ve TimeProvider",a:[
+"Unit test, bir kod biriminin (genellikle tek bir sınıf veya metot) dış bağımlılıklar olmadan, izole şekilde doğru çalıştığını otomatik olarak doğrular. Hızlıdır, her derlemede çalıştırılabilir ve refactoring sırasında güvence sağlar.",
+"AAA kalıbı: Arrange (hazırla), Act (çalıştır), Assert (doğrula). Her test tek bir davranışı test eder ve adı neyi test ettiğini söyler, örneğin `Calculate_AtNight_Applies30PercentDiscount`.",
+"xUnit'te `[Fact]` parametresiz tek bir testtir. `[Theory]` ve `[InlineData(...)]` ise aynı testi farklı verilerle çalıştırır. Exception testi `Assert.Throws<T>(...)` ile yapılır. xUnit her test için sınıfın yeni bir örneğini oluşturduğu için ortak hazırlık constructor'da yapılır.",
+"Test edilebilir kod, bağımlılıklarını constructor'dan soyutlama olarak alan koddur. `DateTime.Now`'ı doğrudan kullanan bir metot güvenilir şekilde test edilemez. .NET 8'deki `TimeProvider` soyutlaması enjekte edilirse testte zaman FakeTimeProvider ile sabitlenebilir."],
+g:"Bir sınıf kütüphanesinde PricingService yaz: kWh ve müşteri tipine göre fiyat hesaplasın, gece 00–06 arasında %30 indirim uygulasın ve saati TimeProvider'dan alsın. xUnit projesinde Theory ile farklı kWh/müşteri tipi kombinasyonlarını, Fact ile negatif kWh'de exception fırlatıldığını, FakeTimeProvider ile de gece indirimini test et.",
+k:["dotnet test tüm testleri yeşil gösterir","Gece testi sistem saatinden bağımsız çalışır","Bir kuralı bozunca ilgili test kırmızıya döner"],
+m:"Testleri AAA kalıbıyla, her biri tek bir davranışı doğrulayacak şekilde yazarım; Theory ile veri odaklı test yaparım. Zaman ve dış servisler gibi bağımlılıkları soyutlayıp enjekte ederek kodu test edilebilir tutarım.",
+h:"dotnet add package Microsoft.Extensions.TimeProvider.Testing",
+s:`// Kurulum:
+// dotnet new classlib -o src/Pricing
+// dotnet new xunit -o tests/Pricing.Tests
+// dotnet add tests/Pricing.Tests reference src/Pricing
+// dotnet add tests/Pricing.Tests package Microsoft.Extensions.TimeProvider.Testing
+
+// ---- src/Pricing/PricingService.cs ----
+namespace Pricing;
+
+public enum CustomerType { Bireysel, Kurumsal }
+
+public class PricingService(TimeProvider time)
+{
+    public const decimal UnitPrice = 8m;
+
+    public decimal Calculate(decimal kwh, CustomerType type)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(kwh);
+        var price = kwh * UnitPrice;
+        if (type == CustomerType.Kurumsal) price *= 0.85m;
+        if (time.GetLocalNow().Hour < 6) price *= 0.70m;
+        return Math.Round(price, 2);
+    }
+}
+
+// ---- tests/Pricing.Tests/PricingServiceTests.cs ----
+using Microsoft.Extensions.Time.Testing;
+using Pricing;
+
+public class PricingServiceTests
+{
+    private readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 11, 23, 14, 0, 0, TimeSpan.Zero));
+
+    [Theory]
+    [InlineData(10, CustomerType.Bireysel, 80)]
+    [InlineData(10, CustomerType.Kurumsal, 68)]
+    [InlineData(0, CustomerType.Bireysel, 0)]
+    public void Calculate_Daytime_ReturnsExpected(int kwh, CustomerType type, int expected)
+    {
+        var sut = new PricingService(_time);
+        var result = sut.Calculate(kwh, type);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Calculate_NegativeKwh_Throws()
+    {
+        var sut = new PricingService(_time);
+        Assert.Throws<ArgumentOutOfRangeException>(() => sut.Calculate(-1, CustomerType.Bireysel));
+    }
+
+    [Fact]
+    public void Calculate_AtNight_Applies30PercentDiscount()
+    {
+        _time.SetUtcNow(new DateTimeOffset(2026, 11, 23, 3, 0, 0, TimeSpan.Zero));
+        var sut = new PricingService(_time);
+        Assert.Equal(56m, sut.Calculate(10, CustomerType.Bireysel));
+    }
+}`},
+{c:14,p:"test",t:"Mock ve stub: NSubstitute",a:[
+"Test ettiğin sınıfın bağımlılıkları (repository, e-posta servisi, ödeme API'si) gerçek olursa test yavaşlar, dış sistemlere bağımlı hale gelir ve kırılgan olur. Bunun yerine bu bağımlılıkların sahte versiyonları (test double) kullanılır.",
+"Türleri: stub sabit bir cevap döner ('GetAsync çağrılırsa şu istasyonu dön'). Mock ise etkileşimi doğrular ('NotifyAsync tam bir kez, şu parametreyle çağrıldı mı?'). Fake ise basit ama gerçekten çalışan bir uygulamadır (in-memory repository gibi).",
+"NSubstitute ve Moq, interface'lerden çalışma zamanında sahte nesneler üretir. NSubstitute'ta `var repo = Substitute.For<IStationRepository>(); repo.GetAsync(\"A\").Returns(station);` ile cevap tanımlanır, `notifier.Received(1).NotifyAsync(...)` ile doğrulama yapılır.",
+"Aşırı mock kullanımı testleri implementasyon detaylarına bağlar ve refactoring'i zorlaştırır. Kural: davranışın sonucunu doğrula, mock ile sadece dış dünyaya giden önemli etkileşimleri (e-posta gönderildi mi, ödeme alındı mı) kontrol et."],
+g:"IStationRepository ve INotifier bağımlılıkları olan bir SessionService.StartAsync(stationId, userId) yaz. İstasyon yoksa false dönsün; arızalıysa false dönüp operatöre bildirim göndersin; uygunsa durumu Charging yapıp kaydetsin. NSubstitute ile üç senaryoyu test et ve bildirimin yalnızca doğru durumda, tam bir kez gönderildiğini doğrula.",
+k:["Üç test de yeşil","Arıza senaryosunda Received(1).NotifyAsync doğrulanır","Başarılı senaryoda DidNotReceive().NotifyAsync"],
+m:"Dış bağımlılıkları test double'larla değiştiririm: stub ile cevap verir, mock ile önemli etkileşimleri doğrularım. Testleri implementasyona değil davranışa bağlamaya özen gösteririm.",
+h:"dotnet add package NSubstitute",
+s:`// dotnet new xunit -o tests/Sessions.Tests   (bu örnekte kod ve testler aynı projede)
+// dotnet add package NSubstitute
+using NSubstitute;
+
+public record Station(string Id, string Status);
+
+public interface IStationRepository
+{
+    Task<Station?> GetAsync(string id);
+    Task SaveAsync(Station station);
+}
+
+public interface INotifier { Task NotifyAsync(string message); }
+
+public class SessionService(IStationRepository repo, INotifier notifier)
+{
+    public async Task<bool> StartAsync(string stationId, string userId)
+    {
+        var station = await repo.GetAsync(stationId);
+        if (station is null) return false;
+        if (station.Status == "Faulted")
+        {
+            await notifier.NotifyAsync($"{stationId} arızalı, {userId} şarj başlatamadı");
+            return false;
+        }
+        await repo.SaveAsync(station with { Status = "Charging" });
+        return true;
+    }
+}
+
+public class SessionServiceTests
+{
+    private readonly IStationRepository _repo = Substitute.For<IStationRepository>();
+    private readonly INotifier _notifier = Substitute.For<INotifier>();
+    private SessionService Sut => new(_repo, _notifier);
+
+    [Fact]
+    public async Task Start_UnknownStation_ReturnsFalse()
+    {
+        _repo.GetAsync("X").Returns((Station?)null);
+        Assert.False(await Sut.StartAsync("X", "u1"));
+    }
+
+    [Fact]
+    public async Task Start_FaultedStation_NotifiesOperatorOnce()
+    {
+        _repo.GetAsync("A").Returns(new Station("A", "Faulted"));
+        var ok = await Sut.StartAsync("A", "u1");
+
+        Assert.False(ok);
+        await _notifier.Received(1).NotifyAsync(Arg.Is<string>(m => m.Contains("arızalı")));
+        await _repo.DidNotReceive().SaveAsync(Arg.Any<Station>());
+    }
+
+    [Fact]
+    public async Task Start_AvailableStation_SavesCharging()
+    {
+        _repo.GetAsync("A").Returns(new Station("A", "Available"));
+
+        Assert.True(await Sut.StartAsync("A", "u1"));
+        await _repo.Received(1).SaveAsync(Arg.Is<Station>(s => s.Status == "Charging"));
+        await _notifier.DidNotReceive().NotifyAsync(Arg.Any<string>());
+    }
+}`},
+{c:14,p:"test",t:"Integration test: WebApplicationFactory",a:[
+"Unit testler parçaları ayrı ayrı doğrular, ama parçaların birlikte çalıştığını garanti etmez: routing, middleware, DI kayıtları, JSON serileştirme ve doğrulama. Integration test, uygulamayı gerçeğe yakın şekilde ayağa kaldırıp HTTP üzerinden test eder.",
+"`Microsoft.AspNetCore.Mvc.Testing` paketindeki `WebApplicationFactory<Program>`, uygulamayı bellekte bir test sunucusuyla başlatır ve bir HttpClient verir. Ağ portu açılmadığı için testler hızlıdır.",
+"`WithWebHostBuilder` ve `ConfigureTestServices` ile gerçek servisleri test versiyonlarıyla değiştirebilirsin; örneğin dış ödeme servisinin yerine bir fake koyabilirsin. Veritabanında gerçeğe en yakın sonucu, Testcontainers ile Docker'da gerçek bir PostgreSQL ayağa kaldırarak alırsın.",
+"Minimal API'lerde Program sınıfı top-level olarak üretildiği için test projesinden görünmesi gerekir; bunun için Program.cs'in sonuna `public partial class Program { }` eklenir."],
+g:"Bir web projesinde GET /stations/{id} (yoksa 404) ve POST /stations (Name boşsa 400 ValidationProblem, değilse 201 Created) endpoint'lerini yaz; veriyi IStationStore'dan (in-memory) alsın. Bir xUnit projesinde WebApplicationFactory<Program> ile bu senaryoları test et. Bir testte ConfigureTestServices ile IStationStore'u önceden doldurulmuş bir fake ile değiştir.",
+k:["404, 400 ve 201 senaryoları yeşil","Location header'ı yeni kaynağı gösterir","Fake store testte gerçek kaydın yerine geçer"],
+m:"Integration testlerde WebApplicationFactory ile uygulamayı bellekte ayağa kaldırıp HTTP üzerinden test ederim; routing, middleware ve DI birlikte doğrulanır. Dış bağımlılıkları ConfigureTestServices ile değiştirir, veritabanı için Testcontainers kullanırım.",
+h:"dotnet add package Microsoft.AspNetCore.Mvc.Testing",
+s:`// Kurulum:
+// dotnet new web -o src/Api
+// dotnet new xunit -o tests/Api.Tests
+// dotnet add tests/Api.Tests reference src/Api
+// dotnet add tests/Api.Tests package Microsoft.AspNetCore.Mvc.Testing
+
+// ---- src/Api/Program.cs ----
+using System.Collections.Concurrent;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<IStationStore, InMemoryStationStore>();
+var app = builder.Build();
+
+app.MapGet("/stations/{id}", (string id, IStationStore store) =>
+    store.Get(id) is { } s ? Results.Ok(s) : Results.NotFound());
+
+app.MapPost("/stations", (CreateStation req, IStationStore store) =>
+{
+    if (string.IsNullOrWhiteSpace(req.Name))
+        return Results.ValidationProblem(new Dictionary<string, string[]> { ["Name"] = ["Name zorunlu"] });
+
+    var station = new StationDto(Guid.NewGuid().ToString("N")[..8], req.Name);
+    store.Add(station);
+    return Results.Created($"/stations/{station.Id}", station);
+});
+app.Run();
+
+public record CreateStation(string Name);
+public record StationDto(string Id, string Name);
+
+public interface IStationStore
+{
+    StationDto? Get(string id);
+    void Add(StationDto s);
+}
+
+public class InMemoryStationStore : IStationStore
+{
+    private readonly ConcurrentDictionary<string, StationDto> _db = new();
+    public StationDto? Get(string id) => _db.GetValueOrDefault(id);
+    public void Add(StationDto s) => _db[s.Id] = s;
+}
+
+public partial class Program { }
+
+// ---- tests/Api.Tests/StationApiTests.cs ----
+using System.Net;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+
+public class StationApiTests(WebApplicationFactory<Program> factory)
+    : IClassFixture<WebApplicationFactory<Program>>
+{
+    [Fact]
+    public async Task Get_Unknown_Returns404()
+    {
+        var res = await factory.CreateClient().GetAsync("/stations/yok");
+        Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task Post_EmptyName_Returns400()
+    {
+        var res = await factory.CreateClient().PostAsJsonAsync("/stations", new { Name = "" });
+        Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task Post_Valid_Returns201WithLocation()
+    {
+        var res = await factory.CreateClient().PostAsJsonAsync("/stations", new { Name = "ANK-001" });
+        Assert.Equal(HttpStatusCode.Created, res.StatusCode);
+        Assert.StartsWith("/stations/", res.Headers.Location!.ToString());
+    }
+
+    [Fact]
+    public async Task Get_WithFakeStore_ReturnsSeededStation()
+    {
+        var fake = new InMemoryStationStore();
+        fake.Add(new StationDto("seed1", "Test İstasyonu"));
+
+        var client = factory.WithWebHostBuilder(b =>
+            b.ConfigureTestServices(s => s.AddSingleton<IStationStore>(fake))).CreateClient();
+
+        var station = await client.GetFromJsonAsync<StationDto>("/stations/seed1");
+        Assert.Equal("Test İstasyonu", station!.Name);
+    }
+}`}
+
+];
+
+const A=[
+["C#'ta her tip ya değer tipidir (value type) ya da referans tipidir (reference type). `int`, `double`, `bool`, `DateTime` ve kendi yazdığın `struct`'lar değer tipidir. `class`, `string`, diziler ve `List<T>` ise referans tipidir.",
+"Değer tipindeki bir değişken verinin kendisini taşır. `b = a` dediğinde veri kopyalanır ve iki bağımsız kopya oluşur.",
+"Referans tipindeki bir değişken, nesnenin heap'teki adresini taşır. `b = a` dediğinde sadece adres kopyalanır. İki değişken aynı nesneyi gösterir; birinden yapılan değişiklik diğerinden de görünür.",
+"struct ne zaman kullanılır? Küçük, değişmeyen ve değer gibi davranan veriler için (koordinat, para miktarı). Geri kalan her şey için class kullanılır."],
+["Metotlara parametreler varsayılan olarak değer ile geçer (pass by value): metoda değişkenin bir kopyası gider. Metot içinde bir int'i değiştirmek dışarıyı etkilemez.",
+"Referans tipi değerle gönderildiğinde adres kopyalanır. Metot nesnenin içini değiştirebilir, ama değişkeni başka bir nesneye bağlarsa bu dışarıyı etkilemez.",
+"`ref` değişkenin kendisini gönderir; metot içindeki değişiklik çağıranın değişkenine yansır. Göndermeden önce değişkene değer atanmış olmalıdır.",
+"`out` da değişkenin kendisini gönderir ama amacı metottan ek bir değer döndürmektir. Çağırmadan önce atama gerekmez, metot ise atama yapmak zorundadır. `int.TryParse(\"12\", out var n)` klasik örnektir: dönüş değeri başarıyı, out parametresi sonucu taşır. `in` ise salt okunur referanstır; büyük struct'ları kopyalamadan göndermek için kullanılır."],
+["`string` bir referans tipidir ama immutable'dır (değişmez): oluşturulduktan sonra içeriği değiştirilemez. `s += \"a\"` mevcut string'i değiştirmez. Eski içerik ile yeni karakterden yepyeni bir string üretir ve s artık onu gösterir.",
+"Döngüde n kez += yapmak, her seferinde giderek uzayan metni kopyalamak demektir: toplamda yaklaşık n²/2 karakter kopyalanır. Ayrıca her ara string çöpe dönüşür ve GC'ye yük bindirir.",
+"`StringBuilder` içeride büyüyebilen bir karakter tamponu tutar. Append sadece sona ekler, tampon dolunca kapasiteyi büyütür. Sonunda tek bir `ToString()` ile string üretilir.",
+"Kural: birkaç birleştirme için + veya `$\"...\"` yeterlidir. Döngüde birleştirme varsa StringBuilder kullan."],
+["Değer tipleri dahil her şey `object`'ten türer. Bir değer tipini `object` (veya bir interface) türündeki bir değişkene atadığında boxing olur: heap'te küçük bir kutu oluşturulur ve değer içine kopyalanır.",
+"Unboxing, kutudaki değeri geri çıkarmaktır ve açık cast gerektirir: `(int)o`. Kutu yalnızca içindeki tipin birebir aynısına açılabilir; bir int kutusunu doğrudan long'a açamazsın.",
+"Neden önemli? Her boxing bir heap tahsisi ve bir kopyadır. Eski `ArrayList` her şeyi object olarak tuttuğu için int eklemek boxing yapar. Generic `List<int>` ise int'leri doğrudan tutar. Generic'lerin en büyük faydalarından biri budur."],
+["İki nesnenin 'eşit' olması iki anlama gelebilir: aynı nesne olmaları (referans eşitliği) ya da içeriklerinin aynı olması (değer eşitliği).",
+"class'ta `==` ve `Equals` varsayılan olarak referans eşitliğine bakar. Aynı değerlere sahip iki ayrı nesne eşit sayılmaz.",
+"`record` (C# 9) değer eşitliği için tasarlanmış bir referans tipidir. Derleyici senin yerine Equals, GetHashCode, == ve okunabilir bir ToString üretir. Primary constructor ile yazılan bir record'un özellikleri init-only'dir, yani record immutable olarak kullanılır.",
+"`with` ifadesi orijinali değiştirmeden, bazı alanları farklı bir kopya üretir. DTO'lar, event'ler ve value object'ler için idealdir."],
+["Hash tabanlı koleksiyonlar (Dictionary, HashSet) bir elemanı iki adımda bulur. Önce GetHashCode ile hangi kovaya (bucket) bakacağını belirler, sonra o kovadaki elemanları Equals ile karşılaştırır.",
+"Varsayılan GetHashCode ve Equals nesnenin kimliğine (referansına) bakar. Bu yüzden aynı değerli iki Money ayrı nesne sayılır ve HashSet ikisini de saklar.",
+"Kural: eşit olan iki nesnenin hash kodu mutlaka aynı olmalıdır. Sadece Equals'ı override edip GetHashCode'u unutursan eşit nesneler farklı kovalara düşer ve Dictionary onları bulamaz.",
+"`HashCode.Combine(...)` birden fazla alandan güvenli bir hash üretir. Hash'e katılan alanlar değişmez olmalıdır; nesne koleksiyondayken hash'i değişirse koleksiyon onu bir daha bulamaz."],
+["abstract class, doğrudan örneği oluşturulamayan bir taban sınıftır. Hem gövdesi olan metotlar ve alanlar (ortak durum) hem de alt sınıfların doldurmak zorunda olduğu abstract metotlar içerebilir.",
+"interface ise bir sözleşmedir; 'bu yetenekleri sağlarım' der ve durum (alan) tutmaz. Bir sınıf yalnızca bir sınıftan türeyebilir ama istediği kadar interface uygulayabilir.",
+"Hangisini seçmeli? Türler arasında gerçek bir 'is-a' ilişkisi ve paylaşılan kod varsa abstract class. Farklı türlere ortak bir yetenek kazandırmak veya bağımlılığı soyutlamak (DI) istiyorsan interface.",
+"`if (s is IDrawable d)` pattern matching'dir: nesnenin o tipe uyup uymadığını kontrol eder, uyuyorsa onu o tipte bir değişkene bağlar."],
+["Polimorfizm, aynı çağrının nesnenin gerçek tipine göre farklı davranmasıdır. C#'ta metotlar varsayılan olarak virtual değildir. Bir metodun ezilebilmesi için tabanda `virtual` (veya abstract) olarak işaretlenmesi, alt sınıfta da `override` edilmesi gerekir.",
+"override edilmiş bir metot çağrıldığında CLR değişkenin tipine değil, nesnenin çalışma zamanındaki tipine bakar. `Base b = new Derived()` olsa bile Derived'ın metodu çalışır.",
+"`new` ise ezme değil gizlemedir (method hiding): alt sınıfta aynı isimde, tabandakiyle ilgisi olmayan yeni bir metot tanımlar. Hangisinin çalışacağına derleme zamanında değişkenin tipine bakılarak karar verilir.",
+"Pratikte new nadiren kullanılır ve genellikle tasarım sorununa işarettir. `sealed override` ise metodun daha alttaki sınıflarda ezilmesini engeller."],
+["Encapsulation (kapsülleme), nesnenin verisini dış dünyadan saklayıp yalnızca kontrollü metotlarla değiştirilmesine izin vermektir. Amaç, nesnenin hiçbir zaman geçersiz bir duruma düşmemesidir (invariant).",
+"C#'taki aracı property ve erişim belirleyicileridir. `public decimal Balance { get; private set; }` dışarıdan okunur ama sadece sınıfın kendisi tarafından değiştirilebilir.",
+"Kurallar (bakiye eksiye düşemez, yatırılan tutar pozitif olmalı) setter'lara dağılmak yerine anlamlı metotlarda (Deposit, Withdraw) toplanır. DDD'de buna zengin domain modeli denir. Tersi, her şeyin public set olduğu anemic modeldir.",
+"Erişim belirleyicileri: public (herkes), private (sadece sınıfın kendisi), protected (sınıf ve alt sınıfları), internal (aynı assembly)."],
+["static üye bir nesneye değil, tipin kendisine aittir. Tüm örnekler aynı static alanı paylaşır ve ona `User.Count` gibi tip adıyla erişilir. static metotlar `this`'e erişemez.",
+"Constructor, nesne oluşturulurken çalışan özel bir metottur ve birden fazla olabilir (overload). `: this(...)` ile bir constructor işi başka bir constructor'a devreder, böylece kurulum mantığı tek yerde kalır. Taban sınıfın constructor'ını çağırmak için `: base(...)` kullanılır.",
+"Dikkat: static alanlar uygulama boyunca yaşar ve thread'ler arasında paylaşılır. Çok thread'li ortamda static bir sayacı korumasız artırmak race condition'a yol açar (Async bölümünde bununla ilgili bir görev var)."],
+["Kalıtım (inheritance) bir 'is-a' ilişkisidir: köpek bir hayvandır. Composition ise 'has-a' ilişkisidir: arabanın bir motoru vardır.",
+"Kalıtım güçlü bir bağ kurar. Alt sınıf tabanın iç detaylarına bağımlıdır ve ilişki derleme zamanında sabitlenir. `Car : GasEngine` yazarsan elektrikli araba için yeni bir sınıf hiyerarşisi gerekir.",
+"Composition'da Car motoru bir alan olarak tutar ve bir interface üzerinden kullanır. Motor dışarıdan verildiği için (constructor injection) motoru değiştirmek için Car'a dokunmak gerekmez.",
+"Yaygın tavsiye 'composition over inheritance'tır. Kalıtımı gerçek bir is-a ilişkisi ve paylaşılan davranış olduğunda kullan."],
+["Thread, işletim sisteminin çalıştırdığı yürütme birimidir ve pahalıdır (her biri yaklaşık 1 MB stack kullanır). .NET thread'leri tekrar kullanmak için bir ThreadPool tutar; Task.Run ve async devamlar bu havuzdaki thread'lerde çalışır.",
+"`Thread.Sleep(1000)` mevcut thread'i 1 saniye bloklar. Thread hiçbir iş yapmadan bekler ve başka bir işe verilemez. Havuzdaki thread'ler bloklanırsa yeni işler kuyrukta bekler ve havuz yeni thread'leri yavaş yavaş ekler. Buna thread pool starvation denir.",
+"`await Task.Delay(1000)` ise bir timer kurar ve thread'i serbest bırakır. Süre dolunca metodun kalanı havuzdaki boş bir thread'de devam eder. Beklerken hiçbir thread tutulmaz.",
+"Bu yüzden async kodda Thread.Sleep kullanılmaz. Aynı mantık I/O için de geçerlidir: veritabanı veya HTTP çağrısını await etmek, sunucunun thread bekletmeden daha çok isteğe cevap vermesini sağlar."],
+["async bir metot çağrıldığı anda çalışmaya başlar ve bir Task döndürür. `await` ise 'bu iş bitene kadar metodumun geri kalanını beklet' demektir.",
+"`await A(); await B();` yazarsan B, A bitmeden başlamaz. İşler birbirine bağımlı değilse bu boşa beklemektir.",
+"Doğrusu, önce hepsini başlatıp Task'ları toplamak, sonra `await Task.WhenAll(...)` ile birlikte beklemektir. Toplam süre en uzun işin süresine iner. `Task<T>` için WhenAll, sonuçları çağrı sırasıyla bir T[] dizisi olarak verir.",
+"`Task.WhenAny` ise ilk biten işi bekler. Timeout veya en hızlı kaynağı seçme gibi senaryolarda kullanılır."],
+["Race condition, birden fazla thread aynı veriye aynı anda eriştiğinde sonucun zamanlamaya bağlı hale gelmesidir.",
+"`counter++` tek satır gibi görünse de üç adımdır: değeri oku, bir ekle, geri yaz. İki thread aynı anda 5'i okursa ikisi de 6 yazar ve bir artış kaybolur.",
+"`Interlocked` sınıfı tek bir değişken üzerindeki basit işlemleri (Increment, Add, Exchange, CompareExchange) işlemci seviyesinde atomik yapar. En hızlı çözüm budur.",
+"`lock (obj) { ... }` bir bloğa aynı anda yalnızca bir thread'in girmesini sağlar; birden fazla satırın birlikte korunması gerektiğinde kullanılır. lock bloğu içinde await kullanılamaz, async kodda bunun yerine SemaphoreSlim kullanılır. Ayrıca `ConcurrentDictionary` gibi thread-safe koleksiyonlar da vardır."],
+["Uzun süren bir işi dışarıdan durdurmak gerekebilir: kullanıcı isteği iptal etmiştir, timeout dolmuştur ya da uygulama kapanıyordur. .NET'te bunun standart yolu CancellationToken'dır.",
+"`CancellationTokenSource` iptali tetikleyen taraftır: Cancel() çağrılır veya belirli bir süre sonra otomatik iptal edilir. `Token` ise işi yapan metoda verilir ve sadece 'iptal istendi mi?' bilgisini taşır.",
+"İptal işbirlikçidir, thread zorla durdurulmaz. Metot ya `ct.ThrowIfCancellationRequested()` ile düzenli olarak kontrol eder ya da token'ı kendi çağırdığı async metotlara (Task.Delay, HttpClient, EF Core sorguları) geçirir. İptal edilince OperationCanceledException fırlar.",
+"ASP.NET Core'da bir controller action'a CancellationToken parametresi eklersen, istemci bağlantıyı kopardığında token otomatik olarak iptal edilir."],
+["async bir metotta fırlatılan exception hemen dışarı çıkmaz. Döndürülen Task'ın içine konur ve Task 'Faulted' durumuna geçer. Exception, Task await edildiğinde tekrar fırlatılır.",
+"Task.WhenAll'da birden fazla iş hata verebilir. Task'ın Exception özelliği bu hataların hepsini içeren bir AggregateException'dır.",
+"Ancak `await` kullanımı kolaylaştırmak için AggregateException'ı açar ve sadece ilk hatayı fırlatır. Diğer hataları görmek için WhenAll'un döndürdüğü Task'ı bir değişkende tutup `task.Exception.InnerExceptions`'a bakmak gerekir.",
+"Ek not: `async void` metotlardaki exception'lar yakalanamaz ve uygulamayı çökertebilir. async void sadece event handler'larda kullanılır; geri kalan her yerde async Task kullanılır."],
+["Thread düşük seviyeli bir işletim sistemi kaynağıdır. `new Thread(...)` havuz dışında yeni bir thread oluşturur ve uzun süren, özel işler için kullanılır.",
+"Task ise 'gelecekte tamamlanacak bir iş'in soyutlamasıdır. Bir Task'ın arkasında her zaman bir thread olmak zorunda değildir; Task.Delay veya bir I/O işlemi beklenirken hiçbir thread kullanılmaz. `Task.Run` ise CPU işini ThreadPool'daki bir thread'e verir.",
+"await'ten sonra kodun hangi thread'de devam edeceği SynchronizationContext'e bağlıdır. Konsol uygulamalarında ve ASP.NET Core'da böyle bir context yoktur, devam havuzdaki herhangi bir thread'de olabilir. WPF ve WinForms'ta ise UI thread'ine geri dönülür. Kütüphane kodunda `ConfigureAwait(false)` bu geri dönüşü kapatır.",
+"Kısaca: I/O beklemek için async/await, CPU yoğun iş için Task.Run, new Thread ise neredeyse hiçbir zaman."],
+["Paralellik faydalıdır ama sınırsız paralellik zararlıdır. 1000 isteği aynı anda bir API'ye göndermek rate limit'e takılır veya veritabanı bağlantı havuzunu tüketir.",
+"Semaphore, belirli sayıda 'giriş izni' olan bir sayaçtır. `SemaphoreSlim(2)` aynı anda en fazla 2 iş girebilir demektir. `WaitAsync()` izin alır (izin yoksa thread'i bloklamadan bekler), `Release()` izni geri verir.",
+"Release mutlaka finally içinde çağrılmalıdır. Aksi halde bir exception izni sızdırır ve zamanla her şey kilitlenir.",
+"`SemaphoreSlim(1)` async uyumlu bir lock olarak kullanılabilir. lock içinde await yapılamadığı için async kodda bu yöntem tercih edilir."],
+["Big-O, girdi büyüdükçe bir algoritmanın ne kadar yavaşladığını anlatır. O(1) sabit süre, O(n) girdiyle orantılı süre, O(n²) girdinin karesiyle orantılı süre demektir.",
+"List<T> içeride bir dizidir. İndeksle erişim O(1)'dir ama `Contains` elemanı bulana kadar baştan sona tarar, yani O(n)'dir. Ortadan ekleme ve silme de diğer elemanları kaydırdığı için O(n)'dir.",
+"Dictionary<TKey,TValue> ve HashSet<T> hash tablosudur: anahtarın hash kodundan doğrudan kovasını hesaplar. Arama, ekleme ve silme ortalama O(1)'dir. Bedeli daha fazla bellek kullanmaları ve sırasız olmalarıdır.",
+"Mülakat refleksi: soruda 'bunu daha önce gördüm mü?' veya 'bu değer var mı?' varsa aklına önce HashSet ya da Dictionary gelsin. Two Sum gibi soruların çoğu bu fikirle O(n²)'den O(n)'e iner."],
+["HashSet<T> tekrarsız elemanlardan oluşan, sırasız bir kümedir. Aynı elemanı ikinci kez eklemeye çalışırsan eklenmez.",
+"Kritik detay: `Add` metodu bool döner. Eleman yeni eklendiyse true, zaten varsa false döner. Böylece 'daha önce gördüm mü?' kontrolünü ve eklemeyi tek çağrıda yaparsın.",
+"Görülenleri bir sette tutup diziyi tek geçişte dolaşma kalıbı algoritma sorularında sürekli karşına çıkar: tekrar bulma, ilk tekrar eden karakter, iki dizinin kesişimi gibi. Süre O(n), ek bellek O(n)'dir.",
+"İç içe iki döngüyle her elemanı diğer her elemanla karşılaştırmak ise O(n²) olurdu."],
+["Stack (yığın) LIFO bir yapıdır: Last In, First Out. Üst üste konmuş tabaklar gibi, en son koyduğunu ilk alırsın. Temel işlemleri Push (üste koy), Pop (üsttekini al) ve Peek'tir (üsttekine bak); hepsi O(1)'dir.",
+"Queue (kuyruk) ise FIFO'dur: ilk gelen ilk çıkar. Enqueue ve Dequeue işlemleri vardır; BFS ve iş kuyruklarında kullanılır.",
+"Stack'in klasik kullanımları parantez eşleştirme, geri alma (undo), ifade değerlendirme ve DFS'tir. Metot çağrıları da arka planda bir call stack ile yönetilir; sonsuz özyinelemenin StackOverflowException vermesinin sebebi budur.",
+"Parantez problemindeki fikir şudur: her kapanış, en son açılmış ve henüz kapanmamış parantezle eşleşmelidir. 'En son açılan' parantez de tam olarak stack'in tepesindedir."],
+["Generic'ler, tipi parametre olarak alan sınıf ve metotlar yazmanı sağlar. `MyStack<T>` bir kez yazılır, `MyStack<int>` veya `MyStack<string>` olarak kullanılır. Tip güvenliği derleme zamanında sağlanır ve değer tipleri için boxing olmaz.",
+"Diziler sabit boyutludur. Dinamik yapılar (List<T>, Stack<T>) içeride bir dizi tutar; dizi dolunca iki kat büyüklükte yeni bir dizi açıp elemanları oraya kopyalar.",
+"Tek bir büyütme O(n) sürer ama nadiren olur. n eleman eklemenin toplam maliyeti yaklaşık 2n kopyadır, yani eleman başına ortalama O(1). Buna amortize O(1) denir.",
+"Boşalan hücreyi `default!` ile temizlemek, referans tiplerde nesnenin GC tarafından toplanabilmesi için önemlidir. Aksi halde dizi ölü nesneleri canlı tutar."],
+["Linked list (bağlı liste), elemanların bellekte yan yana durmadığı bir yapıdır. Her düğüm (node) kendi değerini ve bir sonraki düğümün referansını tutar. Listenin elinde sadece başın (head) referansı vardır.",
+"Diziyle karşılaştırırsak: dizide indeksle erişim O(1), bağlı listede O(n)'dir çünkü baştan yürümek gerekir. Buna karşılık elinde düğüm varsa araya ekleme ve silme O(1)'dir, kaydırma gerekmez.",
+"Ters çevirme mantığı: her düğümün Next okunu bir önceki düğüme çevirirsin. Oku çevirdiğin an ileriye giden bağlantıyı kaybedeceğin için önce `next`'i bir değişkene kaydetmelisin. prev, cur ve next ile iş tek geçişte biter.",
+"Linked list soruları genellikle işaretçi manipülasyonu ister: ters çevirme, ortayı bulma (yavaş/hızlı işaretçi), döngü tespiti, iki sıralı listeyi birleştirme. .NET'teki hazır sürüm `LinkedList<T>`'dir."],
+["LINQ, koleksiyonlar üzerinde Where, Select, OrderBy gibi metotlarla sorgu yazmanı sağlar. Bu metotların çoğu sonucu hemen hesaplamaz; sadece 'nasıl hesaplanacağını' tarif eden bir sorgu nesnesi döndürür. Buna deferred (ertelenmiş) execution denir.",
+"Sorgu, foreach ile dolaşıldığında veya ToList, ToArray, Count, First gibi bir metot çağrıldığında çalışır. Bu yüzden sorgu tanımlandıktan sonra kaynağa eklenen elemanlar da sonuca girer.",
+"Tuzak: aynı sorguyu iki kez dolaşırsan iki kez çalışır (multiple enumeration). Sorgu pahalıysa veya veritabanına gidiyorsa sonucu bir kez `ToList()` ile somutlaştırıp onu kullanmalısın.",
+"Hemen çalışan metotlar: ToList, ToArray, ToDictionary, Count, Sum, Max, First, Any."],
+["GroupBy, elemanları bir anahtara göre gruplar. Her grup bir `IGrouping<TKey, TElement>`'tir: `Key` grubun anahtarını verir, grubun kendisi de o anahtara sahip elemanların koleksiyonudur.",
+"Select içinde her grup için Count, Sum, Average, Max gibi toplama (aggregate) metotları çağrılarak özet çıkarılır. Bu, SQL'deki `GROUP BY ... SUM(...)` ile birebir aynıdır.",
+"OrderBy ve OrderByDescending sıralar, ThenBy ikinci bir sıralama kriteri ekler. `new { ... }` ile isimsiz (anonymous) tipler oluşturulur; geçici sonuçları sınıf tanımlamadan taşımak için kullanışlıdır.",
+"EF Core'da aynı LINQ sorgusu SQL'e çevrilir ve gruplama veritabanında yapılır."],
+["IEnumerable<T>, 'elemanlarını sırayla verebilen bir şey' sözleşmesidir. foreach bunu kullanır: GetEnumerator ile bir enumerator alır, MoveNext ile sonraki elemana geçer, Current ile değeri okur.",
+"`yield return` ile bu mekanizmayı elle yazmadan bir iterator metodu oluşturursun. Derleyici metodu bir durum makinesine çevirir. Her yield return'de değer dışarı verilir ve metot orada duraklar; sonraki eleman istendiğinde kaldığı yerden devam eder.",
+"Değerler istendikçe üretildiği için (lazy) sonsuz bir dizi bile tanımlanabilir. Take(5) beş eleman aldıktan sonra istemeyi bırakır; döngü hiç bitmese de program takılmaz.",
+"Bu yaklaşım büyük dosyaları satır satır okurken veya sayfalı veri çekerken tüm veriyi belleğe almadan işlemeyi sağlar. `yield break` diziyi sonlandırır."],
+["IEnumerable<T> üzerindeki LINQ metotları (LINQ to Objects) `Func<T,bool>` gibi delegate'ler, yani derlenmiş kod alır. Filtre, bellekteki her eleman için C# kodu olarak çalışır.",
+"IQueryable<T> üzerindeki metotlar ise `Expression<Func<T,bool>>` alır. Bu, kodun kendisi değil, ağaç şeklindeki tarifidir (expression tree). EF Core bu ağacı okuyup SQL'e çevirir; filtre veritabanında çalışır ve sadece eşleşen satırlar gelir.",
+"Klasik hata: EF Core'da önce `ToList()` (veya AsEnumerable) çağırıp sonra Where yazmak. Bu durumda tüm tablo belleğe çekilir ve filtre C#'ta çalışır. Filtreler ToList'ten önce yazılmalıdır.",
+"Repository'den IQueryable döndürmek esneklik sağlar ama sorgu kontrolünü dışarıya sızdırır. Bu, tartışmalı bir tasarım konusudur."],
+["Delegate, bir metodu temsil eden tiptir. Metodu bir değişkende tutabilir, parametre olarak gönderebilir ve daha sonra çağırabilirsin. Lambda ifadeleri (`x => x * 2`) delegate oluşturmanın kısa yoludur.",
+"Hazır generic delegate'ler: `Func<T1, ..., TResult>` parametre alır ve değer döndürür (son tip parametresi dönüş tipidir). `Action<T1, ...>` parametre alır ama değer döndürmez. `Predicate<T>` bir T alır ve bool döndürür.",
+"LINQ tamamen bunun üzerine kuruludur: `Where(Func<T,bool>)`, `Select(Func<T,TResult>)`. Kendi Filter metodunu yazınca LINQ'nun içinde ne olduğunu görmüş olursun.",
+"Lambda dışarıdaki değişkenleri yakalayabilir (closure). Yakalanan değişken kopyalanmaz; lambda değişkenin kendisine bağlı kalır."],
+["Event, bir nesnenin 'bir şey oldu' diye haber vermesini sağlayan yapıdır (observer pattern). Yayıncı (publisher) event'i tetikler, aboneler (subscriber) de `+=` ile kendi metotlarını ekler.",
+"event arka planda bir delegate'tir ama dışarıya kısıtlı açılır. Dışarıdaki kod sadece `+=` ve `-=` yapabilir; event'i tetikleyemez veya abone listesini silemez. Tetikleme yetkisi yalnızca sınıfın kendisindedir.",
+"Standart imza `EventHandler<T>`'dir: (object sender, T args). `?.Invoke` hiç abone yoksa oluşacak null hatasını önler.",
+"Tuzak: abone olup `-=` ile ayrılmayan nesneler, yayıncı onları referansla tuttuğu için bellekte kalır (memory leak)."],
+["Generic bir metotta derleyici T hakkında hiçbir şey bilmez; T üzerinde sadece object'in metotlarını çağırabilirsin. Constraint (kısıt) ile T'nin belirli bir yeteneğe sahip olduğunu garanti edersin.",
+"Yaygın kısıtlar: `where T : class` (referans tipi), `where T : struct` (değer tipi), `where T : new()` (parametresiz constructor), `where T : IComparable<T>` (bu interface'i uygular), `where T : BaseEntity` (bu sınıftan türer).",
+"`IComparable<T>.CompareTo` negatif, sıfır veya pozitif bir sayı döner; bu nesnenin diğerinden küçük, ona eşit veya ondan büyük olduğunu gösterir. Sort ve Max gibi işlemler buna dayanır.",
+"`params T[]` metoda istenen sayıda argümanı virgülle göndermeyi sağlar; argümanlar içeride dizi olarak gelir. Gerçek projelerde `where TEntity : BaseEntity` kısıtlı generic repository sık görülür."],
+["Extension method, var olan bir tipe kaynak koduna dokunmadan ve ondan türemeden yeni bir metot eklenmiş gibi kullanmanı sağlar.",
+"Kuralı: static bir class içinde static bir metot yazılır ve ilk parametrenin başına `this` konur. `public static bool IsPalindrome(this string s)` yazınca `\"kayak\".IsPalindrome()` diye çağırabilirsin; derleyici bunu `StringExt.IsPalindrome(\"kayak\")` çağrısına çevirir.",
+"LINQ'daki Where ve Select gibi metotların hepsi IEnumerable<T> için yazılmış extension metotlardır. ASP.NET Core'daki `builder.Services.AddXxx()` kayıtları da birer extension metottur.",
+"İki işaretçi (two pointers) tekniğinde bir işaretçi baştan, diğeri sondan başlar ve ortada buluşana kadar ilerler. Palindrom kontrolü bu sayede O(n) zaman ve O(1) bellekle yapılır. Bu teknik, algoritma kalıplarından biridir."],
+["GC yalnızca yönetilen belleği (managed memory) temizler ve ne zaman temizleyeceği belli değildir. Dosya handle'ları, veritabanı bağlantıları ve soketler gibi kaynaklar ise sınırlıdır; iş biter bitmez bırakılmaları gerekir.",
+"IDisposable bunun sözleşmesidir: kaynağı serbest bırakan tek bir `Dispose()` metodu. `using` bloğu, blok bittiğinde exception olsa bile Dispose'u çağırır; derleyici bunu try/finally'ye çevirir. `using var x = ...;` yazımında Dispose, değişken kapsamdan çıkınca çağrılır.",
+"DbContext, HttpResponseMessage, FileStream ve SqlConnection gibi tiplerin hepsi IDisposable'dır.",
+"Not: HttpClient'ı her istek için using ile oluşturmak soket tükenmesine yol açar. Bunun yerine IHttpClientFactory kullanılır."],
+["Garbage Collector, artık hiçbir yerden erişilemeyen nesnelerin belleğini otomatik olarak geri alır. Erişilebilirlik 'kök'lerden (yerel değişkenler, static alanlar, CPU register'ları) başlanarak takip edilir; köklerden ulaşılamayan her nesne çöptür.",
+"Heap nesillere ayrılır ve yeni nesneler Gen 0'da doğar. Çoğu nesne kısa ömürlü olduğu için Gen 0 sık ve hızlı toplanır. Toplamadan sağ çıkanlar Gen 1'e, oradan da Gen 2'ye terfi eder; Gen 2 seyrek ve pahalı toplanır. 85 KB'tan büyük nesneler Large Object Heap'e gider.",
+"WeakReference, nesneyi GC'den korumayan bir referanstır ve önbellek senaryolarında kullanılır. Debug modda JIT yerel değişkenleri daha uzun canlı tutabildiği için bu deney Release modda daha güvenilir sonuç verir.",
+"Gerçek kodda GC.Collect() neredeyse hiç çağrılmaz. Bellek sızıntıları genellikle unutulmuş event aboneliklerinden, static koleksiyonlardan ve Dispose edilmeyen kaynaklardan kaynaklanır."],
+["Dependency Injection, bir sınıfın ihtiyaç duyduğu nesneleri kendisinin `new` ile oluşturması yerine dışarıdan, genellikle constructor'dan almasıdır. ASP.NET Core'da bu nesneleri bir DI container (IServiceProvider) oluşturur ve dağıtır.",
+"Servis kaydedilirken ömrü (lifetime) seçilir. Singleton: uygulama boyunca tek örnek (cache, konfigürasyon). Scoped: her scope için bir örnek; web'de her HTTP isteği bir scope'tur (DbContext). Transient: her istendiğinde yeni örnek (hafif, durumsuz servisler).",
+"Captive dependency hatası: Singleton bir servise Scoped bir servis enjekte edilirse, scoped servis singleton tarafından tutulur ve fiilen singleton olur. DbContext gibi thread-safe olmayan bir nesne tüm isteklerce paylaşılır ve hatalara yol açar. ASP.NET Core, Development ortamında bunu kontrol edip exception fırlatır.",
+"Bir scope dışında scoped servis gerekiyorsa (örneğin bir BackgroundService içinde) `IServiceScopeFactory.CreateScope()` ile scope elle açılır."],
+["SOLID'in D'si olan Dependency Inversion Principle'a göre üst seviye modüller (iş mantığı) alt seviye modüllere (e-posta, SMS, veritabanı) doğrudan bağlı olmamalıdır. İkisi de soyutlamalara (interface) bağlı olmalıdır.",
+"OrderService içinde `new SmsNotifier()` yazmak onu SMS'e mahkum eder. Kanalı değiştirmek için OrderService'i değiştirmen gerekir ve test sırasında gerçekten SMS gönderilir.",
+"OrderService constructor'dan bir INotifier alırsa hangi uygulamanın kullanılacağına dışarısı (DI container) karar verir; testte de sahte bir uygulama verilir. Fake, davranışı basitçe taklit eden elle yazılmış bir sınıftır. Moq gibi kütüphanelerle mock da oluşturulabilir.",
+"Bu prensip Clean Architecture'ın temelidir: Application katmanı interface'i tanımlar, Infrastructure katmanı onu uygular."],
+["SOLID'in O'su olan Open/Closed Principle'a göre bir sınıf genişlemeye açık, değişikliğe kapalı olmalıdır. Yeni bir davranış eklemek için mevcut ve test edilmiş kodu değiştirmek yerine yeni kod eklemelisin.",
+"Kötü örnek: `if (type == \"student\") ... else if (type == \"campaign\") ...`. Her yeni indirim türü bu metoda yeni bir dal ekler; metot büyür ve her değişiklikte bir şeyleri bozma riski oluşur.",
+"Strategy pattern'de her davranış, ortak bir interface'i uygulayan ayrı bir sınıfa konur. Hesaplayıcı sadece interface'i bilir. Yeni indirim yeni bir sınıf demektir ve PriceCalculator'a dokunulmaz.",
+"SOLID'in diğer harfleri: S (Single Responsibility: bir sınıfın değişmek için tek bir sebebi olmalı), L (Liskov: alt sınıf tabanın yerine sorunsuz kullanılabilmeli), I (Interface Segregation: büyük interface'ler yerine küçük ve odaklı interface'ler)."],
+["Exception, normal akışın devam edemeyeceği bir durumu bildirir. throw ile fırlatılır ve çağrı zincirinde ilk uygun catch bulunana kadar yukarı doğru ilerler. Stack trace, hatanın hangi metot zinciri üzerinden geldiğini gösterir.",
+"Custom exception, Exception'dan türeyen ve domain'e özgü bilgi (OrderId gibi) taşıyan bir sınıftır. Üst katmanlar hatayı tipine göre yakalayıp anlamlı bir tepki verebilir; örneğin bu hatayı 404'e çevirebilir.",
+"Yakalayıp yeniden fırlatırken `throw;` orijinal stack trace'i korur. `throw ex;` ise izi o satırdan yeniden başlatır ve hatanın asıl kaynağı kaybolur. Hatayı başka bir exception'a sarmak istiyorsan `throw new XException(\"...\", ex);` ile orijinali InnerException olarak ekle.",
+"Kurallar: anlamlı bir şey yapamayacaksan hatayı yakalama, boş catch yazma ve akış kontrolü için exception kullanma. Beklenen durumlarda TryParse gibi kalıplar tercih edilir."],
+["try/catch/finally yapısında finally bloğu her durumda çalışır: try normal bitse de, exception fırlasa da, try içinde return olsa da. Kaynak temizliği için kullanılır; using de arka planda bunu yapar.",
+"`return x;` çalıştığında dönüş değeri o anda hesaplanıp bir kenara konur. Sonra finally çalışır ve en son metot kaydedilen değeri döndürür. x bir int (değer tipi) olduğu için finally'de değiştirilmesi dönüş değerini etkilemez.",
+"x bir referans tipi (örneğin List) olsaydı ve finally'de listeye eleman eklenseydi, dönen liste aynı nesne olduğu için değişiklik görünürdü. Değer ve referans tipi farkı burada da karşına çıkar.",
+"finally'nin çalışmadığı nadir durumlar: Environment.FailFast, process'in zorla sonlandırılması ve StackOverflowException."]
+];
+
+const fmt=s=>esc(s).replace(/`([^`]+)`/g,"<code class=\"ic\">$1</code>");
+const TR={"ç":"c","ğ":"g","ı":"i","ö":"o","ş":"s","ü":"u","Ç":"C","Ğ":"G","İ":"I","Ö":"O","Ş":"S","Ü":"U"};
+const slug=(x,i)=>String(i+1).padStart(2,"0")+"-"+x.t.replace(/[çğıöşüÇĞİÖŞÜ]/g,c=>TR[c]).replace(/<[^>]*>/g," ").split(/[^A-Za-z0-9#]+/).filter(Boolean).slice(0,4).map(w=>w[0].toUpperCase()+w.slice(1)).join("").replace(/#/g,"Sharp");
+const pascal=s=>s.replace(/[çğıöşüÇĞİÖŞÜ]/g,c=>TR[c]).split(/[^A-Za-z0-9#]+/).filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1)).join("").replace(/#/g,"Sharp");
+const catDir=ci=>String(ci+1).padStart(2,"0")+"-"+pascal(CATS[ci]);
+const clsName=(x,i)=>"G"+slug(x,i).replace("-","_");
+const runnable=x=>x.c!==12&&x.c!==14;
+const repoCmd=(x,i)=>runnable(x)?`dotnet run --project solutions -- ${i+1}`:x.p==="test"?`# Test projesi: kurulum adımları çözümün başındaki yorumda (labs/${slug(x,i)})`:`dotnet new web -o labs/${slug(x,i)}`;
+const skel=i=>{const x=X[i],n=i+1;
+  if(!runnable(x))return `// Görev ${n} · ${x.t}\n// Bu görev web/test projesi gerektirdiği için runner'a dahil değil.\n// Kodunu burada sakla; çalıştırmak için kartın üstündeki komutla labs/ altında ayrı proje aç.\n\n`;
+  const isAsync=/\bawait\b/.test(x.s);
+  return `// Görev ${n} · ${x.t}\n// Çalıştır: dotnet run --project solutions -- ${n}\n// Ek using'leri namespace satırının üstüne yaz.\n\nnamespace Pratik.Gorev${n};\n\npublic static class ${clsName(x,i)}\n{\n    public static ${isAsync?"async Task":"void"} Run()\n    {\n        \n    }\n}\n\n// Yardımcı tipleri (class, record, interface, enum) buraya, sınıfın dışına yaz.\n`;
+};
+const KEY="csharp-pratik-done";
+let done=new Set();
+try{done=new Set(JSON.parse(localStorage.getItem(KEY)||"[]"))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify([...done]))}catch(e){}};
+let cat=-1,query="",hideDone=false;
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const $=id=>document.getElementById(id);
+
+const loadJSON=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")??d}catch(e){return d}};
+const saveJSON=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let drafts=loadJSON("csharp-pratik-drafts",{});
+let committed=new Set(loadJSON("csharp-pratik-committed",[]));
+let gh=loadJSON("csharp-pratik-gh",{owner:"",repo:"",branch:"main",path:"solutions/{cat}/{cls}.cs",token:""});
+if(!gh.path||gh.path==="solutions/{slug}/Program.cs")gh.path="solutions/{cat}/{cls}.cs";
+const pathFor=i=>(gh.path||"solutions/{cat}/{cls}.cs").replaceAll("{cat}",catDir(X[i].c)).replaceAll("{cls}",clsName(X[i],i)).replaceAll("{slug}",slug(X[i],i)).replaceAll("{n}",String(i+1).padStart(2,"0"));
+const encPath=p=>p.split("/").map(encodeURIComponent).join("/");
+const b64=s=>{const b=new TextEncoder().encode(s);let r="";for(let k=0;k<b.length;k+=0x8000)r+=String.fromCharCode.apply(null,b.subarray(k,k+0x8000));return btoa(r)};
+const unb64=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g,"")),c=>c.charCodeAt(0)));
+let draftTimer=null;
+const saveDrafts=()=>{clearTimeout(draftTimer);draftTimer=setTimeout(()=>saveJSON("csharp-pratik-drafts",drafts),400)};
+
+async function ghFetch(path,opts={}){
+  const r=await fetch(`https://api.github.com/repos/${encodeURIComponent(gh.owner)}/${encodeURIComponent(gh.repo)}${path}`,{...opts,headers:{"Accept":"application/vnd.github+json","Authorization":`Bearer ${gh.token}`,"X-GitHub-Api-Version":"2022-11-28",...(opts.body?{"Content-Type":"application/json"}:{})}});
+  if(!r.ok&&!(opts.allow404&&r.status===404)){const err=new Error("gh");err.status=r.status;try{err.detail=(await r.json()).message}catch(e){}throw err}
+  return r;
+}
+function ghError(err){
+  if(!err.status)return "GitHub'a bağlanılamadı. Sayfa claude.ai içinde açıksa bu özellik çalışmaz; kendi adresindeki (pages.dev) sürümü kullan. İnternet bağlantını da kontrol et.";
+  return ({401:"Token geçersiz veya süresi dolmuş.",403:"Token'ın bu repoya yazma izni yok (Contents: Read and write gerekli) ya da istek limiti doldu.",404:"Repo veya branch bulunamadı ya da token'ın bu repoya erişimi yok.",409:"Çakışma oluştu, dosya bu arada değişmiş. Tekrar dene.",422:"GitHub isteği reddetti. Branch adı doğru mu, repo boş mu?"})[err.status]||`GitHub hatası (${err.status}): ${err.detail||""}`;
+}
+const ghReady=()=>gh.owner&&gh.repo&&gh.token;
+function syncDone(i){
+  document.querySelectorAll(`input[data-i="${i}"]`).forEach(c=>c.checked=true);
+  document.querySelectorAll(`#g${i}`).forEach(a=>a.classList.add("done"));
+  $("countTxt").textContent=`${done.size} / ${X.length} tamamlandı`;
+  $("barFill").style.width=(done.size/X.length*100)+"%";
+}
+async function ghCommit(i,el){
+  const st=el.querySelector(".st");
+  if(!ghReady()){st.textContent="Önce GitHub ayarlarını doldur.";openPanel();return}
+  const code=el.querySelector("textarea.ed").value;
+  if(!code.trim()||code===skel(i)){st.textContent="Önce kodunu yaz, boş şablon commit edilmez.";return}
+  st.textContent="Commit ediliyor…";
+  try{
+    const p=`/contents/${encPath(pathFor(i))}`;
+    const branch=gh.branch||"main";
+    const cur=await ghFetch(`${p}?ref=${encodeURIComponent(branch)}`,{allow404:true});
+    const body={message:`${String(i+1).padStart(2,"0")}: ${X[i].t} (çözümüm)`,content:b64(code.endsWith("\n")?code:code+"\n"),branch};
+    if(cur.status===200)body.sha=(await cur.json()).sha;
+    const res=await ghFetch(p,{method:"PUT",body:JSON.stringify(body)});
+    const j=await res.json();
+    committed.add(i);saveJSON("csharp-pratik-committed",[...committed]);
+    done.add(i);save();syncDone(i);
+    st.innerHTML=`Commit edildi. <a href="${esc(j.commit.html_url)}" target="_blank" rel="noopener">GitHub'da aç</a>`;
+    const sol=el.querySelector("details.sol");sol.open=true;sol.scrollIntoView({block:"nearest",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+  }catch(err){st.textContent=ghError(err)}
+}
+async function ghLoad(i,el){
+  const st=el.querySelector(".st");
+  if(!ghReady()){st.textContent="Önce GitHub ayarlarını doldur.";openPanel();return}
+  st.textContent="Yükleniyor…";
+  try{
+    const r=await ghFetch(`/contents/${encPath(pathFor(i))}?ref=${encodeURIComponent(gh.branch||"main")}`,{allow404:true});
+    if(r.status===404){st.textContent="Repoda bu görev için çözüm yok.";return}
+    const code=unb64((await r.json()).content);
+    drafts[i]=code;saveJSON("csharp-pratik-drafts",drafts);
+    document.querySelectorAll(`textarea[data-ed="${i}"]`).forEach(t=>t.value=code);
+    st.textContent="GitHub'daki sürüm yüklendi.";
+  }catch(err){st.textContent=ghError(err)}
+}
+function openPanel(){const p=$("ghPanel");p.hidden=false;p.scrollIntoView({block:"start"});}
+const card=(x,i)=>`<article class="card${done.has(i)?" done":""}" id="g${i}">
+<div class="head"><span class="num">${String(i+1).padStart(2,"0")}</span><h3>${esc(x.t)}</h3>
+<label class="check"><input type="checkbox" data-i="${i}"${done.has(i)?" checked":""}> Yaptım</label></div>
+<div class="repo"><code>${esc(repoCmd(x,i))}</code><button class="copy" data-r="${i}">Kopyala</button></div>
+<details class="konu" open><summary>Konu anlatımı</summary>${(x.a||A[i]).map(p=>`<p>${fmt(p)}</p>`).join("")}</details>
+<div class="lbl">Şunu kodla</div><div class="task" style="margin-top:0">${esc(x.g)}</div>
+<div class="lbl">Çıktıda görmen gereken</div><ul>${x.k.map(k=>`<li>${esc(k)}</li>`).join("")}</ul>
+<div class="iv"><b>Mülakatta:</b> ${esc(x.m)}</div>
+<details><summary>İpucu</summary><p style="margin:6px 0 0"><code>${esc(x.h)}</code></p></details>
+<div class="mine"><div class="lbl">Senin çözümün</div>
+<textarea class="ed" data-ed="${i}" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Görev ${i+1} için çözümün" placeholder="Kodunu buraya yaz.">${esc(drafts[i]!=null?drafts[i]:skel(i))}</textarea>
+<div class="mine-actions"><button class="btn2 gh-commit" data-g="${i}">Commit et ve çözümü aç</button><button class="btn2 gh-load" data-g="${i}">GitHub'dan yükle</button><span class="st" aria-live="polite">${committed.has(i)?"Daha önce commit edildi":""}</span></div>
+<div class="path">${esc(pathFor(i))}</div></div>
+<details class="sol"><summary>Çözüm (önce kendin yaz)</summary><div class="codebox"><button class="copy" data-c="${i}">Kopyala</button><pre><code>${esc(x.s)}</code></pre></div></details>
+</article>`;
+
+function render(){
+  const q=query.toLowerCase();
+  let html="";
+  CATS.forEach((name,ci)=>{
+    if(cat!==-1&&cat!==ci)return;
+    const items=X.map((x,i)=>[x,i]).filter(([x,i])=>x.c===ci&&(!hideDone||!done.has(i))&&(!q||(x.t+x.g+x.m+x.s+(x.a||A[i]).join(' ')).toLowerCase().includes(q)));
+    if(!items.length)return;
+    const total=X.filter(x=>x.c===ci).length,dn=X.filter((x,i)=>x.c===ci&&done.has(i)).length;
+    html+=`<h2 class="cat">${name}<small>${dn} / ${total}</small></h2>`+items.map(([x,i])=>card(x,i)).join("");
+  });
+  $("list").innerHTML=html||`<p class="empty">Bu filtreyle görev yok.</p>`;
+  const n=done.size;
+  $("countTxt").textContent=`${n} / ${X.length} tamamlandı`;
+  $("barFill").style.width=(n/X.length*100)+"%";
+}
+
+$("chips").innerHTML=[`<button class="chip" data-c="-1" aria-pressed="true">Tümü (${X.length})</button>`].concat(CATS.map((c,i)=>`<button class="chip" data-c="${i}" aria-pressed="false">${c}</button>`)).join("");
+$("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;cat=+b.dataset.c;
+  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b));render();});
+$("q").addEventListener("input",e=>{query=e.target.value;render();});
+$("hideDone").addEventListener("change",e=>{hideDone=e.target.checked;render();});
+
+document.addEventListener("change",e=>{const i=e.target.dataset&&e.target.dataset.i;if(i===undefined)return;
+  const n=+i;e.target.checked?done.add(n):done.delete(n);save();render();renderToday();});
+document.addEventListener("click",async e=>{const b=e.target.closest(".copy");if(!b)return;
+  try{await navigator.clipboard.writeText(b.dataset.r!==undefined?repoCmd(X[+b.dataset.r],+b.dataset.r):X[+b.dataset.c].s);b.textContent="Kopyalandı";}catch(err){b.textContent="Kopyalanamadı";}
+  setTimeout(()=>b.textContent="Kopyala",1500);});
+
+let todayIds=[];
+function renderToday(){
+  const box=$("today");
+  if(!todayIds.length){box.classList.remove("on");return;}
+  box.classList.add("on");
+  box.innerHTML=`<div class="today-box"><h2>Bugünün görevleri</h2><p>Farklı kategorilerden, henüz yapmadıkların arasından seçildi. Her biri 10–15 dakika.</p></div>`+todayIds.map(i=>card(X[i],i)).join("");
+}
+$("pickBtn").addEventListener("click",()=>{
+  const pool=X.map((x,i)=>i).filter(i=>!done.has(i)).sort(()=>Math.random()-.5);
+  const picked=[],used=new Set();
+  for(const i of pool){if(picked.length===3)break;if(!used.has(X[i].c)){picked.push(i);used.add(X[i].c);}}
+  for(const i of pool){if(picked.length===3)break;if(!picked.includes(i))picked.push(i);}
+  todayIds=picked;renderToday();
+  if(!picked.length){$("today").classList.add("on");$("today").innerHTML=`<div class="today-box"><h2>Hepsini bitirdin</h2><p>Şimdi ilerlemeyi sıfırlayıp ikinci tura başla. Bu sefer çözüme hiç bakmadan.</p></div>`;}
+  $("today").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+});
+$("resetBtn").addEventListener("click",()=>{$("confirm").style.display="block";});
+$("noReset").addEventListener("click",()=>{$("confirm").style.display="none";});
+$("yesReset").addEventListener("click",()=>{done.clear();save();todayIds=[];$("confirm").style.display="none";render();renderToday();});
+
+const fillPanel=()=>{$("ghOwner").value=gh.owner||"";$("ghRepo").value=gh.repo||"";$("ghBranch").value=gh.branch||"main";$("ghPath").value=gh.path||"solutions/{cat}/{cls}.cs";$("ghToken").value=gh.token||"";};
+fillPanel();
+$("ghBtn").addEventListener("click",()=>{const p=$("ghPanel");p.hidden=!p.hidden;if(!p.hidden)p.scrollIntoView({block:"start"});});
+$("ghSave").addEventListener("click",async()=>{
+  gh={owner:$("ghOwner").value.trim(),repo:$("ghRepo").value.trim(),branch:$("ghBranch").value.trim()||"main",path:$("ghPath").value.trim()||"solutions/{cat}/{cls}.cs",token:$("ghToken").value.trim()};
+  saveJSON("csharp-pratik-gh",gh);render();renderToday();
+  const s=$("ghStatus");
+  if(!ghReady()){s.textContent="Kullanıcı adı, repo ve token zorunlu.";return}
+  s.textContent="Test ediliyor…";
+  try{
+    const j=await (await ghFetch("")).json();
+    let msg=`Bağlantı tamam: ${j.full_name} (varsayılan branch: ${j.default_branch}).`;
+    try{await ghFetch(`/branches/${encodeURIComponent(gh.branch)}`)}catch(e){if(e.status===404)msg+=` Uyarı: "${gh.branch}" adında bir branch yok.`;}
+    s.textContent=msg;
+  }catch(err){s.textContent=ghError(err)}
+});
+$("ghForget").addEventListener("click",()=>{gh.token="";saveJSON("csharp-pratik-gh",gh);$("ghToken").value="";$("ghStatus").textContent="Token bu tarayıcıdan silindi.";});
+document.addEventListener("click",e=>{
+  const b=e.target.closest(".gh-commit,.gh-load");if(!b)return;
+  const i=+b.dataset.g,el=b.closest(".card");
+  b.classList.contains("gh-commit")?ghCommit(i,el):ghLoad(i,el);
+});
+document.addEventListener("input",e=>{
+  const t=e.target;if(!t.matches("textarea.ed"))return;
+  const i=+t.dataset.ed;drafts[i]=t.value;saveDrafts();
+  document.querySelectorAll(`textarea[data-ed="${i}"]`).forEach(o=>{if(o!==t)o.value=t.value});
+});
+document.addEventListener("keydown",e=>{
+  const t=e.target;if(!t.matches||!t.matches("textarea.ed"))return;
+  if(e.key==="Tab"&&!e.shiftKey){e.preventDefault();const s=t.selectionStart,en=t.selectionEnd;t.value=t.value.slice(0,s)+"    "+t.value.slice(en);t.selectionStart=t.selectionEnd=s+4;t.dispatchEvent(new Event("input",{bubbles:true}));}
+  if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();ghCommit(+t.dataset.ed,t.closest(".card"));}
+});
+
+render();
+}
+</script>
+</body>
+</html>
