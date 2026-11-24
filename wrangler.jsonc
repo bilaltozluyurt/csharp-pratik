@@ -1,9 +1,13 @@
 {
-  // Cloudflare Workers: sadece public/ klasörünü statik site olarak yayınlar.
+  // Her istek önce src/worker.js'ten geçer (şifre kontrolü),
+  // doğruysa public/ klasöründeki sayfa servis edilir.
   // solutions/ ve labs/ hiçbir zaman yayınlanmaz.
   "name": "csharp-pratik",
+  "main": "src/worker.js",
   "compatibility_date": "2025-11-01",
   "assets": {
-    "directory": "./public"
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
   }
 }

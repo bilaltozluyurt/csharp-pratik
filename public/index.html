@@ -77,7 +77,11 @@ footer code{font-family:"JetBrains Mono",monospace;font-size:14px;background:var
 .gh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:14px 0}
 .gh-grid label{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:600}
 .gh-grid input{font:inherit;font-size:16px;font-weight:400;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
-.gh-status{font-size:14px;margin-top:10px!important;color:var(--ink)!important}
+.gh-status{font-size:15px;margin-top:12px!important;color:var(--ink)!important;padding:12px 14px;border-radius:10px;border:2px solid var(--line);background:var(--bg)}
+.gh-status:empty{display:none}
+.gh-status.ok{border-color:#3e7d4a;background:light-dark(#e3f1e5,#1d3022)}
+.gh-status.err{border-color:#b3412f;background:light-dark(#f7e1dc,#3a1f1a)}
+.gh-status.wait{border-color:var(--accent)}
 .btn2{background:var(--paper);color:var(--ink);border:1px solid var(--line);font-weight:600}
 .btn2:hover{border-color:var(--accent)}
 .mine{margin-top:12px}
@@ -2664,7 +2668,8 @@ async function ghLoad(i,el){
     st.textContent="GitHub'daki sürüm yüklendi.";
   }catch(err){st.textContent=ghError(err)}
 }
-function openPanel(){const p=$("ghPanel");p.hidden=false;p.scrollIntoView({block:"start"});}
+function openPanel(){const p=$("ghPanel");p.hidden=false;scrollToPanel();}
+function scrollToPanel(){const p=$("ghPanel"),bar=document.querySelector(".tools");window.scrollTo({top:p.getBoundingClientRect().top+window.scrollY-(bar?bar.offsetHeight:0)-12});}
 const card=(x,i)=>`<article class="card${done.has(i)?" done":""}" id="g${i}">
 <div class="head"><span class="num">${String(i+1).padStart(2,"0")}</span><h3>${esc(x.t)}</h3>
 <label class="check"><input type="checkbox" data-i="${i}"${done.has(i)?" checked":""}> Yaptım</label></div>
@@ -2731,20 +2736,26 @@ $("yesReset").addEventListener("click",()=>{done.clear();save();todayIds=[];$("c
 
 const fillPanel=()=>{$("ghOwner").value=gh.owner||"";$("ghRepo").value=gh.repo||"";$("ghBranch").value=gh.branch||"main";$("ghPath").value=gh.path||"solutions/{cat}/{cls}.cs";$("ghToken").value=gh.token||"";};
 fillPanel();
-$("ghBtn").addEventListener("click",()=>{const p=$("ghPanel");p.hidden=!p.hidden;if(!p.hidden)p.scrollIntoView({block:"start"});});
+$("ghBtn").addEventListener("click",()=>{const p=$("ghPanel");p.hidden=!p.hidden;if(!p.hidden)scrollToPanel();});
 $("ghSave").addEventListener("click",async()=>{
-  gh={owner:$("ghOwner").value.trim(),repo:$("ghRepo").value.trim(),branch:$("ghBranch").value.trim()||"main",path:$("ghPath").value.trim()||"solutions/{cat}/{cls}.cs",token:$("ghToken").value.trim()};
+  let owner=$("ghOwner").value.trim().replace(/^https?:\/\/(www\.)?github\.com\//i,"").replace(/\.git$/i,"").replace(/\/+$/,"");
+  let repo=$("ghRepo").value.trim().replace(/^https?:\/\/(www\.)?github\.com\//i,"").replace(/\.git$/i,"").replace(/\/+$/,"");
+  if(owner.includes("/")){const [o,r]=owner.split("/");owner=o;if(!repo)repo=r||"";}
+  if(repo.includes("/")){const parts=repo.split("/");if(!owner)owner=parts[0];repo=parts[parts.length-1];}
+  $("ghOwner").value=owner;$("ghRepo").value=repo;
+  gh={owner,repo,branch:$("ghBranch").value.trim()||"main",path:$("ghPath").value.trim()||"solutions/{cat}/{cls}.cs",token:$("ghToken").value.trim()};
   saveJSON("csharp-pratik-gh",gh);render();renderToday();
-  const s=$("ghStatus");
-  if(!ghReady()){s.textContent="Kullanıcı adı, repo ve token zorunlu.";return}
-  s.textContent="Test ediliyor…";
+  const s=$("ghStatus");const show=(cls,msg)=>{s.className="gh-status "+cls;s.textContent=msg;s.scrollIntoView({block:"nearest"});};
+  if(!ghReady()){show("err","Kullanıcı adı, repo ve token zorunlu.");return}
+  show("wait","Test ediliyor…");
   try{
     const j=await (await ghFetch("")).json();
-    let msg=`Bağlantı tamam: ${j.full_name} (varsayılan branch: ${j.default_branch}).`;
+    let msg=`✓ Bağlantı tamam: ${j.full_name} (varsayılan branch: ${j.default_branch}). Artık kartlardan commit edebilirsin.`;
     try{await ghFetch(`/branches/${encodeURIComponent(gh.branch)}`)}catch(e){if(e.status===404)msg+=` Uyarı: "${gh.branch}" adında bir branch yok.`;}
-    s.textContent=msg;
-  }catch(err){s.textContent=ghError(err)}
+    show("ok",msg);
+  }catch(err){show("err","✗ "+ghError(err))}
 });
+$("ghPanel").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("input")){e.preventDefault();$("ghSave").click();}});
 $("ghForget").addEventListener("click",()=>{gh.token="";saveJSON("csharp-pratik-gh",gh);$("ghToken").value="";$("ghStatus").textContent="Token bu tarayıcıdan silindi.";});
 document.addEventListener("click",e=>{
   const b=e.target.closest(".gh-commit,.gh-load");if(!b)return;
