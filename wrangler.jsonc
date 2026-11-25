@@ -1,13 +1,25 @@
 {
-  // Her istek önce src/worker.js'ten geçer (şifre kontrolü),
-  // doğruysa public/ klasöründeki sayfa servis edilir.
+  // Her istek önce src/worker.js'ten geçer (oturum kontrolü),
+  // oturum varsa public/ klasöründeki sayfa servis edilir.
   // solutions/ ve labs/ hiçbir zaman yayınlanmaz.
   "name": "csharp-pratik",
   "main": "src/worker.js",
+  // Bugünden ileri bir tarih yazmayın.
   "compatibility_date": "2025-11-01",
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": true
-  }
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "csharp-pratik",
+      // npx wrangler d1 create csharp-pratik  komutunun verdiği ID'yi buraya yaz
+      "database_id": "9c77aa23-05dd-4da6-9ae1-d6c2510ed331"
+    }
+  ],
+  "observability": { "enabled": true }
 }

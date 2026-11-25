@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F3ECE0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="C# Pratik">
+<title>Giriş · C# Kodlama Pratiği</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F3ECE0; --paper: #FBF7F0; --line: #DCCBB1; --ink: #15233B; --ink-soft: #4A4F57;
+  --warn: #A35F00; --warn-tint: #F8E6C8;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.65; }
+main { max-width: 440px; margin: 0 auto; padding: 48px 18px 64px; display: grid; gap: 20px; }
+h1 { font-size: 26px; font-weight: 700; line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.lead { color: var(--ink-soft); }
+section { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 22px 20px; display: grid; gap: 14px; }
+h2 { font-size: 20px; margin: 0; }
+.basit { border-left: 4px solid var(--ink); padding: 4px 0 4px 14px; font-size: 15px; color: var(--ink-soft); }
+form { display: grid; gap: 12px; }
+label { display: grid; gap: 4px; font-size: 14px; font-weight: 600; }
+input {
+  font: inherit; font-size: 16px; font-weight: 400; color: var(--ink); width: 100%;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px;
+}
+input::placeholder { color: #A89F92; }
+input:focus { outline: 2px solid var(--ink); outline-offset: 0; border-color: var(--ink); }
+.kod { font-family: var(--font-mono); }
+button {
+  font: inherit; font-weight: 600; cursor: pointer; color: var(--paper); background: var(--ink);
+  border: 1px solid var(--ink); border-radius: 999px; padding: 9px 16px; margin-top: 4px; min-height: 44px;
+}
+button:disabled { opacity: .6; cursor: default; }
+button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.mesaj { border-radius: 10px; padding: 10px 12px; font-size: 15px; }
+.mesaj:empty { display: none; }
+.mesaj.hata { background: var(--warn-tint); color: var(--warn); font-weight: 500; }
+.ipucu { font-size: 13px; color: var(--ink-soft); font-weight: 400; }
+footer { color: var(--ink-soft); font-size: 14px; text-align: center; }
+[hidden] { display: none !important; }
+@media (max-width: 420px) { body { font-size: 16px; } section { padding: 18px 14px; } main { padding-top: 28px; } }
+</style>
+</head>
+<body>
+<main>
+  <header style="display:grid;gap:8px">
+    <h1>C# Kodlama Pratiği</h1>
+    <p class="lead">Konu anlatımları ve "şunu kodla" görevleri. Devam etmek için giriş yap.</p>
+  </header>
+  <section aria-labelledby="baslik">
+    <h2 id="baslik">Giriş</h2>
+    <p id="kurulum-aciklama" class="basit" hidden>Henüz hesap yok. Cloudflare'de tanımladığın <b>KURULUM_KODU</b> ile tek hesabını oluştur. Hesap oluşunca kurulum kalıcı olarak kapanır.</p>
+    <form id="form" novalidate>
+      <label id="kod-alan" hidden>Kurulum kodu
+        <input id="kod" class="kod" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </label>
+      <label>E-posta
+        <input id="eposta" type="email" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+      </label>
+      <label>Şifre
+        <input id="sifre" type="password" autocomplete="current-password" required>
+        <span id="sifre-ipucu" class="ipucu" hidden>En az 8 karakter, en az bir harf ve bir rakam.</span>
+      </label>
+      <label id="sifre2-alan" hidden>Şifre (tekrar)
+        <input id="sifre2" type="password" autocomplete="new-password">
+      </label>
+      <div id="mesaj" class="mesaj" role="alert" aria-live="assertive"></div>
+      <button id="gonder" type="submit" disabled>Giriş yap</button>
+    </form>
+  </section>
+  <footer>Oku · yaz · commit et</footer>
+</main>
+<script>
+(function () {
+  var kurulumModu = false;
+  var $ = function (id) { return document.getElementById(id); };
+  var mesaj = $('mesaj'), btn = $('gonder');
+
+  function hata(m) { mesaj.className = 'mesaj hata'; mesaj.textContent = m; }
+
+  function istek(yol, govde) {
+    return fetch(yol, {
+      method: govde ? 'POST' : 'GET',
+      credentials: 'same-origin',
+      headers: govde ? { 'Content-Type': 'application/json', 'X-Uygulama': '1' } : {},
+      body: govde ? JSON.stringify(govde) : undefined
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { j._durum = r.status; return j; });
+    });
+  }
+
+  function kurulumaGec() {
+    kurulumModu = true;
+    document.title = 'İlk kurulum · C# Kodlama Pratiği';
+    $('baslik').textContent = 'İlk kurulum';
+    $('kurulum-aciklama').hidden = false;
+    $('kod-alan').hidden = false;
+    $('sifre2-alan').hidden = false;
+    $('sifre-ipucu').hidden = false;
+    $('sifre').setAttribute('autocomplete', 'new-password');
+    btn.textContent = 'Hesabı oluştur';
+  }
+
+  istek('/api/oturum/durum').then(function (j) {
+    if (j.girisli) { location.replace('/'); return; }
+    if (j.kurulum) kurulumaGec();
+    btn.disabled = false;
+    (kurulumModu ? $('kod') : $('eposta')).focus();
+  }).catch(function () {
+    btn.disabled = false;
+    hata('Sunucuya ulaşılamadı. Bağlantını kontrol edip sayfayı yenile.');
+  });
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    mesaj.textContent = '';
+    var eposta = $('eposta').value.trim(), sifre = $('sifre').value;
+    if (!eposta || !sifre) return hata('E-posta ve şifre gerekli.');
+    var yol = '/api/oturum/giris', govde = { eposta: eposta, sifre: sifre };
+    if (kurulumModu) {
+      if (!$('kod').value) return hata('Kurulum kodunu gir.');
+      if (sifre.length < 8 || !/\p{L}/u.test(sifre) || !/\d/.test(sifre)) return hata('Şifre en az 8 karakter olmalı ve en az bir harf ile bir rakam içermeli.');
+      if (sifre !== $('sifre2').value) return hata('Şifreler aynı değil.');
+      yol = '/api/oturum/kurulum';
+      govde.kod = $('kod').value;
+    }
+    btn.disabled = true;
+    istek(yol, govde).then(function (j) {
+      if (j.tamam) { location.replace('/'); return; }
+      if (j._durum === 409 && kurulumModu) { location.reload(); return; }
+      hata(j.hata || 'Bir hata oluştu.');
+      btn.disabled = false;
+    }).catch(function () {
+      hata('Sunucuya ulaşılamadı.');
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>

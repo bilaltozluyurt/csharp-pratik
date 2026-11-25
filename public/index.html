@@ -76,6 +76,7 @@ footer code{font-family:"JetBrains Mono",monospace;font-size:14px;background:var
 .gh-panel p{margin:0;color:var(--muted);font-size:15px}
 .gh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin:14px 0}
 .gh-grid label{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:600}
+.gh-grid input::placeholder,.acc input::placeholder{color:light-dark(#b3a893,#6b6457)}
 .gh-grid input{font:inherit;font-size:16px;font-weight:400;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .gh-status{font-size:15px;margin-top:12px!important;color:var(--ink)!important;padding:12px 14px;border-radius:10px;border:2px solid var(--line);background:var(--bg)}
 .gh-status:empty{display:none}
@@ -110,6 +111,7 @@ footer pre{margin:8px 0 16px}
 <div class="actions">
 <button class="primary" id="pickBtn">Bugünün 3 görevini seç</button>
 <button class="ghost" id="ghBtn">GitHub ayarları</button>
+<button class="ghost" id="accBtn">Hesap</button>
 <button class="ghost" id="resetBtn">İlerlemeyi sıfırla</button>
 </div>
 <div id="confirm" style="display:none;margin-top:12px;font-size:15px">Tüm işaretler silinsin mi?
@@ -123,6 +125,20 @@ footer pre{margin:8px 0 16px}
 </div></div>
 
 <main class="band" style="padding-top:20px"><div class="wrap">
+<section class="gh-panel acc" id="accPanel" hidden>
+<h2>Hesap</h2>
+<p id="accWho">Oturum bilgisi yükleniyor…</p>
+<div class="mine-actions" style="margin-top:12px"><button class="primary" id="logoutBtn">Çıkış yap</button></div>
+<details style="margin-top:14px"><summary>Şifre değiştir</summary>
+<div class="gh-grid">
+<label>Mevcut şifre<input id="pwOld" type="password" autocomplete="current-password"></label>
+<label>Yeni şifre<input id="pwNew" type="password" autocomplete="new-password" placeholder="En az 8 karakter, harf + rakam"></label>
+<label>Yeni şifre (tekrar)<input id="pwNew2" type="password" autocomplete="new-password"></label>
+</div>
+<div class="mine-actions"><button class="btn2" id="pwBtn">Şifreyi değiştir</button></div>
+</details>
+<p class="gh-status" id="accStatus" aria-live="polite"></p>
+</section>
 <section class="gh-panel" id="ghPanel" hidden>
 <h2>GitHub bağlantısı</h2>
 <p>Çözümlerin bu repoya commit edilir. Token sadece bu tarayıcıda saklanır, başka hiçbir yere gönderilmez (yalnızca api.github.com'a).</p>
@@ -2771,6 +2787,30 @@ document.addEventListener("keydown",e=>{
   const t=e.target;if(!t.matches||!t.matches("textarea.ed"))return;
   if(e.key==="Tab"&&!e.shiftKey){e.preventDefault();const s=t.selectionStart,en=t.selectionEnd;t.value=t.value.slice(0,s)+"    "+t.value.slice(en);t.selectionStart=t.selectionEnd=s+4;t.dispatchEvent(new Event("input",{bubbles:true}));}
   if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();ghCommit(+t.dataset.ed,t.closest(".card"));}
+});
+
+const api=(yol,govde)=>fetch(yol,{method:govde?"POST":"GET",credentials:"same-origin",headers:govde?{"Content-Type":"application/json","X-Uygulama":"1"}:{},body:govde?JSON.stringify(govde):undefined}).then(r=>r.json().catch(()=>({})).then(j=>(j._durum=r.status,j)));
+const accShow=(cls,msg)=>{const s=$("accStatus");s.className="gh-status "+cls;s.textContent=msg;s.scrollIntoView({block:"nearest"});};
+$("accBtn").addEventListener("click",()=>{
+  const p=$("accPanel");p.hidden=!p.hidden;if(p.hidden)return;
+  const bar=document.querySelector(".tools");window.scrollTo({top:p.getBoundingClientRect().top+window.scrollY-(bar?bar.offsetHeight:0)-12});
+  api("/api/oturum/ben").then(j=>{$("accWho").textContent=j.eposta?`Giriş yapan: ${j.eposta}`:"Oturum bilgisi alınamadı (sayfa kendi adresinde açık değilse hesap özellikleri çalışmaz).";})
+    .catch(()=>{$("accWho").textContent="Sunucuya ulaşılamadı.";});
+});
+$("logoutBtn").addEventListener("click",()=>{
+  api("/api/oturum/cikis",{}).then(j=>{if(j.tamam)location.replace("/giris.html");else accShow("err",j.hata||"Çıkış yapılamadı.");})
+    .catch(()=>accShow("err","Sunucuya ulaşılamadı."));
+});
+$("pwBtn").addEventListener("click",()=>{
+  const mevcut=$("pwOld").value,yeni=$("pwNew").value;
+  if(!mevcut||!yeni)return accShow("err","Mevcut ve yeni şifreyi gir.");
+  if(yeni.length<8||!/\p{L}/u.test(yeni)||!/\d/.test(yeni))return accShow("err","Yeni şifre en az 8 karakter olmalı ve en az bir harf ile bir rakam içermeli.");
+  if(yeni!==$("pwNew2").value)return accShow("err","Yeni şifreler aynı değil.");
+  accShow("wait","Değiştiriliyor…");
+  api("/api/oturum/sifre",{mevcut,yeni}).then(j=>{
+    if(j.tamam){["pwOld","pwNew","pwNew2"].forEach(id=>$(id).value="");accShow("ok","✓ Şifre değişti. Diğer cihazlardaki oturumlar kapatıldı.");}
+    else accShow("err","✗ "+(j.hata||"Şifre değiştirilemedi."));
+  }).catch(()=>accShow("err","Sunucuya ulaşılamadı."));
 });
 
 render();
